@@ -4,7 +4,7 @@ from flask_cors import CORS
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://admin:spmspmspm' + \
-                                        '@database-1.cmqbhk3xoixj.ap-southeast-1.rds.amazonaws.com:3306/is212_example'
+                                        '@database-1.cmqbhk3xoixj.ap-southeast-1.rds.amazonaws.com:3306/spmDB'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {'pool_size': 100,
                                            'pool_recycle': 280}
@@ -115,6 +115,48 @@ class Consultation(db.Model):
             result[column] = getattr(self, column)
         return result
 
+dposition_skill = db.Table(
+    "dposition_skill",
+    db.Column("skill_id", db.ForeignKey("skill.id")),
+    db.Column("desired_position_id", db.ForeignKey("desired_position.id")),
+)
+
+class Skill(db.Model):
+    __tablename__ = 'skill'
+
+    id = db.Column(db.Integer, primary_key=True)
+    skill_desc = db.Column(db.String(200))
+
+    def to_dict(self):
+        """
+        'to_dict' converts the object into a dictionary,
+        in which the keys correspond to database columns
+        """
+        columns = self.__mapper__.column_attrs.keys()
+        result = {}
+        for column in columns:
+            result[column] = getattr(self, column)
+        return result
+
+class Desired_Position(db.Model):
+    __tablename__ = 'desired_position'
+
+    id = db.Column(db.Integer, primary_key=True)
+    position_name = db.Column(db.String(50))
+    position_desc = db.Column(db.String(200))
+    req_skills = db.relationship('Skill', secondary=dposition_skill, backref='positions')
+
+    def to_dict(self):
+        """
+        'to_dict' converts the object into a dictionary,
+        in which the keys correspond to database columns
+        """
+        columns = self.__mapper__.column_attrs.keys()
+        result = {}
+        for column in columns:
+            result[column] = getattr(self, column)
+        return result
+
 
 db.create_all()
 
@@ -207,6 +249,16 @@ def consultations():
         {
             "data": [consultation.to_dict()
                      for consultation in consultation_list]
+        }
+    ), 200
+
+@app.route("/desired_positions")
+def desired_positions():
+    positions_list = Desired_Position.query.all()
+    return jsonify(
+        {
+            "data": [position.to_dict()
+                     for position in positions_list]
         }
     ), 200
 
