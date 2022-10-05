@@ -118,6 +118,22 @@ class Consultation(db.Model):
 
 db.create_all()
 
+# to get roles from database
+# @app.route("/roles")
+# def getRoles():
+#     Dummy data
+#     return jsonify(
+#         { 
+#             "roles": ['Software Developer', 'Project Manager', 'UX Designer']
+#         }
+#     ), 200
+    
+        # roles_list = Roles.query.all()
+        # return jsonify(
+        #     {
+        #         "data": [role of roles_list]
+        #     }
+        # ), 200
 
 @app.route("/persons/<int:person_id>")
 def person_by_id(person_id):
