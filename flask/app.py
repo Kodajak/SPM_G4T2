@@ -1,320 +1,43 @@
+from sqlite3 import Cursor
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
+import mysql.connector as mysql
+import requests
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://admin:spmspmspm' + \
-                                        '@database-1.cmqbhk3xoixj.ap-southeast-1.rds.amazonaws.com:3306/spmDB'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {'pool_size': 100,
-                                           'pool_recycle': 280}
+# enter your server IP address/domain name
+HOST = "database-1.cmqbhk3xoixj.ap-southeast-1.rds.amazonaws.com" # or "domain.com"
+# database name, if you want just to connect to MySQL server, leave it empty
+DATABASE = "spmDB"
+# "is212_example, spmDB"
+# this is the user you create
+USER = "admin"
+# user password
+PASSWORD = "spmspmspm"
+# connect to MySQL server
+db_connection = mysql.connect(host=HOST, database=DATABASE, user=USER, password=PASSWORD)
+print("Connected to:", db_connection.get_server_info())
+# enter your code here!
 
-db = SQLAlchemy(app)
+cursor = db_connection.cursor()
 
 CORS(app)
 
+@app.route('/')
+def home():
+    return "Hello"
 
-class Person(db.Model):
-    __tablename__ = 'person'
-
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50))
-    title = db.Column(db.String(10))
-
-    __mapper_args__ = {
-        'polymorphic_identity': 'person'
-    }
-
-    def to_dict(self):
-        """
-        'to_dict' converts the object into a dictionary,
-        in which the keys correspond to database columns
-        """
-        columns = self.__mapper__.column_attrs.keys()
-        result = {}
-        for column in columns:
-            result[column] = getattr(self, column)
-        return result
-
-
-class Doctor(Person):
-    __tablename__ = 'doctor'
-
-    id = db.Column(db.Integer, db.ForeignKey('person.id'), primary_key=True)
-    reg_num = db.Column(db.String(15))
-    hourly_rate = db.Column(db.Integer)
-
-    __mapper_args__ = {
-        'polymorphic_identity': 'doctor',
-    }
-
-    def calculate_charges(self, num_mins):
-        """
-        Uses the doctor's hourly rate to determine how much
-        a 'num_mins' length appointment should be charged.
-        NB: an appointment shorter than 10 mins is charged
-        as if it were 10 mins long.
-        """
-        if num_mins < 10:
-            result = self.hourly_rate / 6
-        else:
-            result = self.hourly_rate * (num_mins / 60)
-        return result
-
-
-class Patient(Person):
-    __tablename__ = 'patient'
-
-    id = db.Column(db.Integer, db.ForeignKey('person.id'), primary_key=True)
-    contact_num = db.Column(db.String(15))
-    ewallet_balance = db.Column(db.Integer, default=0)
-
-    __mapper_args__ = {
-        'polymorphic_identity': 'patient',
-    }
-
-    def ewallet_topup(self, amount):
-        """
-        Tops up a patient's e-wallet account.
-        'amount' must be positive.
-        """
-        if amount >= 0:
-            self.ewallet_balance += amount
-        else:
-            raise Exception("Negative topups not allowed.")
-
-    def ewallet_withdraw(self, amount):
-        """
-        Withdraws an 'amount' from the patient's e-wallet if
-        there is sufficient balance.
-        """
-        if self.ewallet_balance >= amount:
-            self.ewallet_balance -= amount
-        else:
-            raise Exception("Unable to withdraw: insufficient balance.")
-
-
-class Consultation(db.Model):
-    __tablename__ = 'consultation'
-
-    id = db.Column(db.Integer, primary_key=True)
-    diagnosis = db.Column(db.String(100))
-    prescription = db.Column(db.String(30))
-    charge = db.Column(db.Integer)
-    doctor_id = db.Column(db.Integer, db.ForeignKey('doctor.id'))
-    patient_id = db.Column(db.Integer, db.ForeignKey('patient.id'))
-
-    def to_dict(self):
-        """
-        'to_dict' converts the object into a dictionary,
-        in which the keys correspond to database columns
-        """
-        columns = self.__mapper__.column_attrs.keys()
-        result = {}
-        for column in columns:
-            result[column] = getattr(self, column)
-        return result
-
-dposition_skill = db.Table(
-    "dposition_skill",
-    db.Column("skill_id", db.ForeignKey("skill.id")),
-    db.Column("desired_position_id", db.ForeignKey("desired_position.id")),
-)
-
-class Skill(db.Model):
-    __tablename__ = 'skill'
-
-    id = db.Column(db.Integer, primary_key=True)
-    skill_desc = db.Column(db.String(200))
-
-    def to_dict(self):
-        """
-        'to_dict' converts the object into a dictionary,
-        in which the keys correspond to database columns
-        """
-        columns = self.__mapper__.column_attrs.keys()
-        result = {}
-        for column in columns:
-            result[column] = getattr(self, column)
-        return result
-
-class Desired_Position(db.Model):
-    __tablename__ = 'desired_position'
-
-    id = db.Column(db.Integer, primary_key=True)
-    position_name = db.Column(db.String(50))
-    position_desc = db.Column(db.String(200))
-    req_skills = db.relationship('Skill', secondary=dposition_skill, backref='positions')
-
-    def to_dict(self):
-        """
-        'to_dict' converts the object into a dictionary,
-        in which the keys correspond to database columns
-        """
-        columns = self.__mapper__.column_attrs.keys()
-        result = {}
-        for column in columns:
-            result[column] = getattr(self, column)
-        return result
-
-
-db.create_all()
-
-
-@app.route("/persons/<int:person_id>")
-def person_by_id(person_id):
-    person = Person.query.filter_by(id=person_id).first()
-    if person:
-        return jsonify({
-            "data": person.to_dict()
-        }), 200
-    else:
-        return jsonify({
-            "message": "Person not found."
-        }), 404
-
-
-@app.route("/doctors")
-def doctors():
-    search_name = request.args.get('name')
-    if search_name:
-        doctor_list = Doctor.query.filter(Doctor.name.contains(search_name))
-    else:
-        doctor_list = Doctor.query.all()
+@app.route("/view_roles")
+def view_Role():
+    query = "SELECT * FROM Role"
+    cursor.execute(query)
+    roles = cursor.fetchall()
     return jsonify(
         {
-            "data": [doctor.to_dict() for doctor in doctor_list]
+            "data": dict(role for role in roles)
         }
     ), 200
-
-
-@app.route("/doctors", methods=['POST'])
-def create_doctor():
-    data = request.get_json()
-    if not all(key in data.keys() for
-               key in ('name', 'title',
-                       'reg_num', 'hourly_rate')):
-        return jsonify({
-            "message": "Incorrect JSON object provided."
-        }), 500
-    doctor = Doctor(**data)
-    try:
-        db.session.add(doctor)
-        db.session.commit()
-        return jsonify(doctor.to_dict()), 201
-    except Exception:
-        return jsonify({
-            "message": "Unable to commit to database."
-        }), 500
-
-
-@app.route("/patients")
-def patients():
-    search_name = request.args.get('name')
-    if search_name:
-        patient_list = Patient.query.filter(Doctor.name.contains(search_name))
-    else:
-        patient_list = Patient.query.all()
-    return jsonify(
-        {
-            "data": [patient.to_dict() for patient in patient_list]
-        }
-    ), 200
-
-
-@app.route("/patients", methods=['POST'])
-def create_patient():
-    data = request.get_json()
-    if not all(key in data.keys() for
-               key in ('name', 'title',
-                       'contact_num', 'ewallet_balance')):
-        return jsonify({
-            "message": "Incorrect JSON object provided."
-        }), 500
-    patient = Patient(**data)
-    try:
-        db.session.add(patient)
-        db.session.commit()
-        return jsonify(patient.to_dict()), 201
-    except Exception:
-        return jsonify({
-            "message": "Unable to commit to database."
-        }), 500
-
-
-@app.route("/consultations")
-def consultations():
-    consultation_list = Consultation.query.all()
-    return jsonify(
-        {
-            "data": [consultation.to_dict()
-                     for consultation in consultation_list]
-        }
-    ), 200
-
-@app.route("/desired_positions")
-def desired_positions():
-    positions_list = Desired_Position.query.all()
-    return jsonify(
-        {
-            "data": [position.to_dict()
-                     for position in positions_list]
-        }
-    ), 200
-
-
-@app.route("/consultations", methods=['POST'])
-def create_consultation():
-    data = request.get_json()
-    if not all(key in data.keys() for
-               key in ('doctor_id', 'patient_id',
-                       'diagnosis', 'prescription', 'length')):
-        return jsonify({
-            "message": "Incorrect JSON object provided."
-        }), 500
-
-    # (1): Validate doctor
-    doctor = Doctor.query.filter_by(id=data['doctor_id']).first()
-    if not doctor:
-        return jsonify({
-            "message": "Doctor not valid."
-        }), 500
-
-    # (2): Compute charges
-    charge = doctor.calculate_charges(data['length'])
-
-    # (3): Validate patient
-    patient = Patient.query.filter_by(id=data['patient_id']).first()
-    if not patient:
-        return jsonify({
-            "message": "Patient not valid."
-        }), 500
-
-    # (4): Subtract charges from patient's e-wallet
-    try:
-        patient.ewallet_withdraw(charge)
-    except Exception:
-        return jsonify({
-            "message": "Patient does not have enough e-wallet funds."
-        }), 500
-
-    # (4): Create consultation record
-    consultation = Consultation(
-        diagnosis=data['diagnosis'], prescription=data['prescription'],
-        doctor_id=data['doctor_id'], patient_id=data['patient_id'],
-        charge=charge
-    )
-
-    # (5): Commit to DB
-    try:
-        db.session.add(consultation)
-        db.session.commit()
-        return jsonify(consultation.to_dict()), 201
-    except Exception:
-        return jsonify({
-            "message": "Unable to commit to database."
-        }), 500
-
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
