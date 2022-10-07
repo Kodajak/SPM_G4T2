@@ -44,12 +44,15 @@
                 <tr>
                     <th>ID</th>
                     <th>Roles Available</th>
+                    <th>Role Description</th>
+
                 </tr>
             </thead>
             <tbody>
                 <tr v-for="role, id in roles">
-                    <td><strong>#{{ id }}</strong></td>
-                    <td><a href="">{{ role }}</a></td>
+                    <td><strong>#{{ role[0] }}</strong></td>
+                    <td><a href="">{{ role[1] }}</a></td>
+                    <td><strong>{{ role[2] }}</strong></td>
                 </tr>
             </tbody>
         </table>
@@ -80,14 +83,18 @@
             data: {
                 roles: []
             },
+            methods:{
+                viewLJRoles(roleID){
+                    
+                }
+            },
             mounted: function() {
-                axios.get('http://localhost:5000/view_roles')
+                axios.get('http://localhost:5000/view_ljRoles')
                     .then(response => {
                         this.roles = response.data.data
                         // console.log(response.data.data)
                     })
                     .catch(error => alert(error));
-                    
             }
         });
     </script>

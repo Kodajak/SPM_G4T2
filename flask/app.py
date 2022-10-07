@@ -39,5 +39,16 @@ def view_Role():
         }
     ), 200
 
+@app.route("/view_ljRoles")
+def view_LJRole ():
+    query = "SELECT * FROM LJRole"
+    cursor.execute(query)
+    ljRoles = cursor.fetchall()
+    return jsonify(
+        {
+            "data": ljRoles
+        }
+    ), 200
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
