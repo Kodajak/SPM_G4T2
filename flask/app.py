@@ -52,6 +52,7 @@ def view_LJRole ():
         }
     ), 200
 
+<<<<<<< Updated upstream
 # to pull out the course id that is under skills
 def getCourse(course_id):
     query = "SELECT course_name, course_desc FROM Course where course_id =" + str(course_id)
@@ -78,6 +79,61 @@ def skill_by_course(skillID):
             # }
         }
     )
+=======
+@app.route("/create_lj", methods=["POST"])
+def create_lj():
+    # check for missing inputs
+    data = request.get_json()
+    if not all(key in data.keys() for
+               key in ('selectedRole', 'selectedCourses')):
+        return jsonify({
+            "message": "Incorrect JSON object provided."
+        }), 500
+  
+    # if form validation succesful
+    try:
+        selectedRole = data['selectedRole']
+        query = "INSERT INTO LearningJourney (ljrole_id, completion_status) VALUES (" + selectedRole + ", 'Incomplete')"
+        cursor.execute(query)
+
+    except Exception:
+        return jsonify({
+            "message": "Unable to commit to database."
+        }), 500
+
+def create_lj():
+    # check for missing inputs
+    data = request.get_json()
+    if not all(key in data.keys() for
+               key in ('selectedRole', 'selectedCourses')):
+        return jsonify({
+            "message": "Incorrect JSON object provided."
+        }), 500
+  
+    # if form validation succesful, create a table for each course
+    try:
+        # get new learning journey id
+        query = "SELECT ljourney_id FROM LearningJourney \
+                WHERE ljourney_id = ( \
+                    SELECT IDENT_CURRENT('LearningJourney'))"
+        cursor.execute(query)
+        ljourney_Id = cursor.fetchall()
+
+        # get selected courses
+        selectedCourses = data['selectedCourses']
+
+        # populate new row for each course selected
+        for courseId in selectedCourses:
+            query = "INSERT INTO courseId VALUES (" + ljourney_Id + "," + courseId + ")"
+            cursor.execute(query)
+        
+    except Exception:
+        return jsonify({
+            "message": "Unable to commit to database."
+        }), 500
+
+
+>>>>>>> Stashed changes
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
