@@ -52,10 +52,9 @@ def view_LJRole ():
         }
     ), 200
 
-<<<<<<< Updated upstream
 # to pull out the course id that is under skills
 def getCourse(course_id):
-    query = "SELECT course_name, course_desc FROM Course where course_id =" + str(course_id)
+    query = "SELECT * FROM Course where course_id =" + str(course_id)
     cursor.execute(query)
     return cursor.fetchall()
 # display it on html
@@ -79,7 +78,6 @@ def skill_by_course(skillID):
             # }
         }
     )
-=======
 @app.route("/create_lj", methods=["POST"])
 def create_lj():
     # check for missing inputs
@@ -133,7 +131,6 @@ def create_lj():
         }), 500
 
 
->>>>>>> Stashed changes
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

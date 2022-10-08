@@ -49,15 +49,15 @@
 
                 Select Courses:
                 <br>
-                <input type="checkbox" id="course1" value="course1" v-model="selectedCourses">
-                <label for="course1">Course1</label>
-                <input type="checkbox" id="course2" value="course2" v-model="selectedCourses">
-                <label for="course2">Course2</label>
-                <input type="checkbox" id="course3" value="course3" v-model="selectedCourses">
-                <label for="course3">Course3</label>
+                <p v-for="course in courses">
+                    <input type="checkbox" :id="course[0][0]" :value="course[0][0]" v-model="selectedCourses">
+                    <label :for="course[0][0]">{{course[0][1]}}:</label> <br>{{course[0][2]}}
+                </p>
                 <br>
-                I have selected the following courses:
-                <p v-for="course of selectedCourses">{{ course }}</p>
+                <p v-if="selectedCourses != ''">
+                    I have selected the following courses:
+                    <p v-for="course of selectedCourses">{{ course }}</p>
+                </p>
                 <br><br>
                 
                 <a href="./myLearningJourney.html">Cancel</a>
@@ -79,7 +79,7 @@
                 roles: [],
                 selectedRole: '',
                 skills: [],
-                selectedSkill: '',
+                selectedSkill: 234234,
                 courses: [],
                 selectedCourses: [],
                 error: ''
@@ -116,14 +116,16 @@
                     .catch(error => alert(error));
             },
 
-            function() {
-                axios.get('http://localhost:5000/view_roleSkills')
+            computed: function() {
+                axios.get('http://localhost:5000/view-course-skills/'+234234)
                     .then(response => {
                         this.skills = response.data.data
+                        this.courses = response.data.data
                         // console.log(response.data.data)
                     })
                     .catch(error => alert(error));
             }
+            
         })
     </script>
 
