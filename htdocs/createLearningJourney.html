@@ -35,7 +35,7 @@
                 Select a Role:
                 <br>
                 <p v-for="role, id in roles"> 
-                    <input type="radio" v-model="selectedRole" :value="role[0]"> {{ role[1] }}
+                    <input type="radio" v-model="selectedRole" :value="role[0]" @change="onChange()"> {{ role[1] }}
                 </p>
                 
                 <p v-if="selectedRole != ''">I have selected role id: {{selectedRole}}</p>
@@ -99,11 +99,13 @@
                 },
 
                 selectedSkill: function (selectedSkill) {
-                    axios.get('http://localhost:5000/view-course-skills/'+ selectedSkill)
-                    .then(response => {
-                        this.courses = response.data.data
-                    })
-                    .catch(error => alert(error));
+                    if (this.selectedSkill != '') {
+                        axios.get('http://localhost:5000/view-course-skills/'+ selectedSkill)
+                        .then(response => {
+                            this.courses = response.data.data
+                        })
+                        .catch(error => alert(error));
+                    }
                 }
             },
             methods: {
@@ -114,24 +116,31 @@
                 //     })
                 //     .catch(error => alert(error));
                 // },
-
+                onChange:function(){
+                    this.selectedSkill = ''
+                    this.selectedCourses = []
+                },
+                
                 // submit LJ
                 submitLearningJourney: function() {
+                    event.preventDefault(); 
                     if (this.selectedRole == '') {
                         return alert("Please select a role first.")
                     } else if (this.selectedCourses.length == 0) {
                         return alert("Please select at least 1 course.")
                     }
-                    event.preventDefault();
-                    axios.post('http://localhost:5000/create_lj', {
-                            selectedRole: this.selectedRole,
-                            selectedCourses: this.selectedCourses,
-                        })
-                    .then(response => {
-                            window.location.replace("./myLearningJourney.html");
-                            return alert("successful creation")
-                        })
-                    .catch(error => { this.error = error.response.data.message });
+                    else {
+                        
+                        axios.post('http://localhost:5000/create_lj', {
+                                selectedRole: this.selectedRole,
+                                selectedCourses: this.selectedCourses,
+                            })
+                        .then(response => {
+                                window.location.replace("./myLearningJourney.html");
+                                return alert("successful creation")
+                            })
+                        .catch(error => { this.error = error.response.data.message });
+                    }
                 }
             },
             // get roles from db
