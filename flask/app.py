@@ -95,6 +95,14 @@ def view_skills(ljRole_Id):
         }
     ), 200
 
+# get new learning journey ID
+def getLjId():
+    query = "SELECT MAX(ljourney_id) FROM LearningJourney"
+    cursor.execute(query)
+    data = cursor.fetchall()
+    id = data[0][0]
+    return id
+
 @app.route("/create_lj", methods=["POST"])
 def create_lj():
     # check for missing inputs
@@ -108,50 +116,103 @@ def create_lj():
   
     # if form validation succesful
     try:
+    # sample_query = "SELECT ljrole_id FROM LearningJourney"
+    # cursor.execute(sample_query)
+    # id = cursor.fetchall()
+    # print(id)
+    # count = len(id) + 1
+    # print(count)
+    # sampleRoleId = 22
+    # completionStatus = 'Incomplete'
+
         selectedRole = data['selectedRole']
-        query = "INSERT INTO LearningJourney (ljrole_id, completion_status) VALUES (" + selectedRole + ", 'Incomplete')"
-        cursor.execute(query)
+        print(selectedRole)
+        print(type(selectedRole))
+        query = "INSERT INTO LearningJourney (ljrole_id, completion_status) VALUES (%s, %s);"
 
-        selectedCourses = data['selectedCourses']
+        lj_data = (selectedRole, 'Incomplete')
+        cursor.execute(query, lj_data)
+        db_connection.commit()
+        print("pass 1")
 
+        sample_query = "SELECT * FROM LearningJourney"
+        cursor.execute(sample_query)
+        print(cursor.fetchall())
+
+        # get new learning journey Id
+        newLjId = getLjId()
+
+        print(newLjId)
+        selectedCourses = data['selectedCourses']   
         for courseId in selectedCourses:
-            query2 = "INSERT INTO LJourney_Course VALUES (" + selectedRole + ","+ courseId + ")"
-            
+            print(courseId)
+            query2 = "INSERT INTO LJourney_Course VALUES (" + str(newLjId) + ","+ str(courseId) + ")"
+            cursor.execute(query2)
+            db_connection.commit()
+        print("completed")
+
+        sample_query2 = "SELECT * FROM LJourney_Course"
+        cursor.execute(sample_query2)
+        print(cursor.fetchall())
+        return jsonify("success"), 201
+
     except Exception:
         return jsonify({
             "message": "Unable to commit to database."
         }), 500
 
-def create_lj():
-    # check for missing inputs
-    data = request.get_json()
-    if not all(key in data.keys() for
-               key in ('selectedRole', 'selectedCourses')):
-        return jsonify({
-            "message": "Incorrect JSON object provided."
-        }), 500
-  
-    # if form validation succesful, create a table for each course
-    try:
-        # get new learning journey id
-        query = "SELECT ljourney_id FROM LearningJourney \
-                WHERE ljourney_id = ( \
-                    SELECT IDENT_CURRENT('LearningJourney'))"
-        cursor.execute(query)
-        ljourney_Id = cursor.fetchall()
+# sample
+# @app.route("/consultations", methods=['POST'])
+# def create_consultation():
+#     data = request.get_json()
+#     if not all(key in data.keys() for
+#                key in ('doctor_id', 'patient_id',
+#                        'diagnosis', 'prescription', 'length')):
+#         return jsonify({
+#             "message": "Incorrect JSON object provided."
+#         }), 500
 
-        # get selected courses
-        selectedCourses = data['selectedCourses']
+#     # (1): Validate doctor
+#     doctor = Doctor.query.filter_by(id=data['doctor_id']).first()
+#     if not doctor:
+#         return jsonify({
+#             "message": "Doctor not valid."
+#         }), 500
 
-        # populate new row for each course selected
-        for courseId in selectedCourses:
-            query = "INSERT INTO courseId VALUES (" + ljourney_Id + "," + courseId + ")"
-            cursor.execute(query)
-        
-    except Exception:
-        return jsonify({
-            "message": "Unable to commit to database."
-        }), 500
+#     # (2): Compute charges
+#     charge = doctor.calculate_charges(data['length'])
+
+#     # (3): Validate patient
+#     patient = Patient.query.filter_by(id=data['patient_id']).first()
+#     if not patient:
+#         return jsonify({
+#             "message": "Patient not valid."
+#         }), 500
+
+#     # (4): Subtract charges from patient's e-wallet
+#     try:
+#         patient.ewallet_withdraw(charge)
+#     except Exception:
+#         return jsonify({
+#             "message": "Patient does not have enough e-wallet funds."
+#         }), 500
+
+#     # (4): Create consultation record
+#     consultation = Consultation(
+#         diagnosis=data['diagnosis'], prescription=data['prescription'],
+#         doctor_id=data['doctor_id'], patient_id=data['patient_id'],
+#         charge=charge
+#     )
+
+#     # (5): Commit to DB
+#     try:
+#         db.session.add(consultation)
+#         db.session.commit()
+#         return jsonify(consultation.to_dict()), 201
+#     except Exception:
+#         return jsonify({
+#             "message": "Unable to commit to database."
+#         }), 500
 
 
 

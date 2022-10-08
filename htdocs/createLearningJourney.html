@@ -117,18 +117,21 @@
 
                 // submit LJ
                 submitLearningJourney: function() {
-                event.preventDefault();
-                axios.post('http://localhost:5000/learningJourney', {
-                        selectedRole: this.selectedRole,
-                        selectedCourses: this.selectedCourses,
-                    })
-                .then(response => {
-                        window.location.replace("./myLearningJourney.html");
-                        alert("successful creation")
-                        return false;
-                    })
-                .catch(error => { this.error = error.response.data.message });
-                    return alert("Error creating consultation")
+                    if (this.selectedRole == '') {
+                        return alert("Please select a role first.")
+                    } else if (this.selectedCourses.length == 0) {
+                        return alert("Please select at least 1 course.")
+                    }
+                    event.preventDefault();
+                    axios.post('http://localhost:5000/create_lj', {
+                            selectedRole: this.selectedRole,
+                            selectedCourses: this.selectedCourses,
+                        })
+                    .then(response => {
+                            window.location.replace("./myLearningJourney.html");
+                            return alert("successful creation")
+                        })
+                    .catch(error => { this.error = error.response.data.message });
                 }
             },
             // get roles from db
