@@ -78,10 +78,28 @@ def skill_by_course(skillID):
             # }
         }
     )
+
+# get skills based on selected ljRole id
+@app.route("/view_skills/<int:ljRole_Id>")
+def view_skills(ljRole_Id):
+    query = "SELECT LJR.ljrole_id, LJR.ljrole_name, LJR.ljrole_desc, All_skills.skill_id, All_skills.skill_desc, All_skills.Active FROM ((spmDB.LJRole LJR INNER JOIN spmDB.LJRole_Skill LJR_Skill ON LJR.ljrole_id = LJR_Skill.ljrole_id) INNER JOIN spmDB.Skill All_skills ON LJR_Skill.skill_id = All_skills.skill_id)"
+    cursor.execute(query)
+    skills = cursor.fetchall()
+    filteredSkills = []
+    for skill in skills:
+        if skill[0] == ljRole_Id:
+            filteredSkills.append([skill[3],skill[4]])
+    return jsonify(
+        {
+            "data": filteredSkills
+        }
+    ), 200
+
 @app.route("/create_lj", methods=["POST"])
 def create_lj():
     # check for missing inputs
     data = request.get_json()
+    print(data)
     if not all(key in data.keys() for
                key in ('selectedRole', 'selectedCourses')):
         return jsonify({
@@ -94,6 +112,11 @@ def create_lj():
         query = "INSERT INTO LearningJourney (ljrole_id, completion_status) VALUES (" + selectedRole + ", 'Incomplete')"
         cursor.execute(query)
 
+        selectedCourses = data['selectedCourses']
+
+        for courseId in selectedCourses:
+            query2 = "INSERT INTO LJourney_Course VALUES (" + selectedRole + ","+ courseId + ")"
+            
     except Exception:
         return jsonify({
             "message": "Unable to commit to database."
