@@ -79,5 +79,16 @@ def skill_by_course(skillID):
         }
     )
 
+@app.route("/view_skills/")
+def view_skills():
+    query = "SELECT LJR.ljrole_id, LJR.ljrole_name, LJR.ljrole_desc, All_skills.skill_id, All_skills.skill_desc, All_skills.Active FROM ((spmDB.LJRole LJR INNER JOIN spmDB.LJRole_Skill LJR_Skill ON LJR.ljrole_id = LJR_Skill.ljrole_id) INNER JOIN spmDB.Skill All_skills ON LJR_Skill.skill_id = All_skills.skill_id)"
+    cursor.execute(query)
+    skills = cursor.fetchall()
+    return jsonify(
+        {
+            "data": {skill[0]: [skill[1],skill[2], skill[3],skill[4],skill[5]] for skill in skills}
+        }
+    ), 200
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
