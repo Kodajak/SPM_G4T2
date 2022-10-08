@@ -42,24 +42,29 @@
                 <br>
                 
                 <!-- upon selecting a skill, the relevant courses will dropdown -->
-                Select a Skill:
-                <br>
-                <button>Skill 1</button>
-                <br><br>
+                <div v-if="selectedRole !=''">
+                    Select a Skill:
+                    <br>
+                    <p v-for="(skill_id, index) in skills">
+                        <input type="radio" v-model="selectedSkill" :value="skill_id[0]">{{skill_id[1]}}
+                    </p>
+                    <br><br>
+                </div>
 
-                Select Courses:
-                <br>
-                <p v-for="course in courses">
-                    <input type="checkbox" :id="course[0][0]" :value="course[0][0]" v-model="selectedCourses">
-                    <label :for="course[0][0]">{{course[0][1]}}:</label> <br>{{course[0][2]}}
-                </p>
-                <br>
-                <p v-if="selectedCourses != ''">
-                    I have selected the following courses:
-                    <p v-for="course of selectedCourses">{{ course }}</p>
-                </p>
-                <br><br>
-                
+                <div v-if="selectedSkill != ''">
+                    Select Courses:
+                    <br>
+                    <p v-for="course in courses">
+                        <input type="checkbox" :id="course[0][0]" :value="course[0][0]" v-model="selectedCourses">
+                        <label :for="course[0][0]">{{course[0][1]}}:</label> <br>{{course[0][2]}}
+                    </p>
+                    <br>
+                    <p v-if="selectedCourses != ''">
+                        I have selected the following courses:
+                        <p v-for="course of selectedCourses">{{ course }}</p>
+                    </p>
+                    <br><br>
+                </div>
                 <a href="./myLearningJourney.html">Cancel</a>
                 <button @click="submitLearningJourney">Submit</button>
             </form>
@@ -79,16 +84,36 @@
                 roles: [],
                 selectedRole: '',
                 skills: [],
-                selectedSkill: 234234,
+                selectedSkill: '',
                 courses: [],
                 selectedCourses: [],
                 error: ''
             },
-            methods: {
-                // display roles
-                viewLJRoles(roleID) {
+            watch: {
+                selectedRole: function (selectedRole) {
+                    axios.get('http://localhost:5000/view_skills/' + selectedRole)
+                    .then(response => {
+                        this.skills = response.data.data
+                    })
+                    .catch(error => alert(error));
                 },
 
+                selectedSkill: function (selectedSkill) {
+                    axios.get('http://localhost:5000/view-course-skills/'+ selectedSkill)
+                    .then(response => {
+                        this.courses = response.data.data
+                    })
+                    .catch(error => alert(error));
+                }
+            },
+            methods: {
+                // async getSkills(selectedRole) {
+                //     axios.get('http://localhost:5000/view_skills/' + selectedRole)
+                //     .then(response => {
+                //         this.skills = response.data.data
+                //     })
+                //     .catch(error => alert(error));
+                // },
 
                 // submit LJ
                 submitLearningJourney: function() {
@@ -114,18 +139,7 @@
                         // console.log(response.data.data)
                     })
                     .catch(error => alert(error));
-            },
-
-            computed: function() {
-                axios.get('http://localhost:5000/view-course-skills/'+234234)
-                    .then(response => {
-                        this.skills = response.data.data
-                        this.courses = response.data.data
-                        // console.log(response.data.data)
-                    })
-                    .catch(error => alert(error));
-            }
-            
+            }, 
         })
     </script>
 
