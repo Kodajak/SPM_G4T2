@@ -4,6 +4,8 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 import mysql.connector as mysql
 import requests
+import json
+
 
 app = Flask(__name__)
 # enter your server IP address/domain name
@@ -49,6 +51,33 @@ def view_LJRole ():
             "data": ljRoles
         }
     ), 200
+
+# to pull out the course id that is under skills
+def getCourse(course_id):
+    query = "SELECT course_name, course_desc FROM Course where course_id =" + str(course_id)
+    cursor.execute(query)
+    return cursor.fetchall()
+
+@app.route("/view-course-skills/<int:skillID>")
+def skill_by_course(skillID):
+
+    query = "SELECT course_id FROM Course_Skill where skill_id =" + str(skillID)
+    cursor.execute(query)
+    courseUnderSkill = cursor.fetchall()
+    courses = []
+    for id in courseUnderSkill:
+        courses.append(getCourse(id[0]))
+    print(courses)
+    
+    return jsonify(
+        {
+            
+            "data": courses
+            # "data": {
+            #     "courses": [course.json() for course in course_skills]
+            # }
+        }
+    )
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
