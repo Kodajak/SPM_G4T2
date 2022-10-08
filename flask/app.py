@@ -57,7 +57,7 @@ def getCourse(course_id):
     query = "SELECT course_name, course_desc FROM Course where course_id =" + str(course_id)
     cursor.execute(query)
     return cursor.fetchall()
-
+# display it on html
 @app.route("/view-course-skills/<int:skillID>")
 def skill_by_course(skillID):
 
