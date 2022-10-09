@@ -38,7 +38,7 @@
                     <input type="radio" v-model="selectedRole" :value="role" @change="onChange()"> {{ role[1] }}
                 </p>
                 
-                <p v-if="selectedRole != ''">I have selected role id: {{selectedRole[1]}}</p>
+                <p v-if="selectedRole != ''">You have selected  {{selectedRole[1]}} as your desired role.</p>
                 <br>
                 
                 <!-- upon selecting a skill, the relevant courses will dropdown -->
@@ -60,7 +60,7 @@
                     </p>
                     <br>
                     <p v-if="selectedCourses != ''">
-                        I have selected the following courses:
+                        You have selected the following courses:
                         <p v-for="course of selectedCourses">{{ course[1] }}</p>
                     </p>
                     <br><br>
