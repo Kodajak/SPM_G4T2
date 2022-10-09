@@ -130,7 +130,7 @@ def create_lj():
         print(type(selectedRole))
         query = "INSERT INTO LearningJourney (ljrole_id, completion_status) VALUES (%s, %s);"
 
-        lj_data = (selectedRole, 'Incomplete')
+        lj_data = (selectedRole[0], 'Incomplete')
         cursor.execute(query, lj_data)
         db_connection.commit()
         print("pass 1")
@@ -143,10 +143,10 @@ def create_lj():
         newLjId = getLjId()
 
         print(newLjId)
-        selectedCourses = data['selectedCourses']   
-        for courseId in selectedCourses:
-            print(courseId)
-            query2 = "INSERT INTO LJourney_Course VALUES (" + str(newLjId) + ","+ str(courseId) + ")"
+        selectedCourses = data['selectedCourses']
+        for course in selectedCourses:
+            print(course[0])
+            query2 = "INSERT INTO LJourney_Course VALUES (" + str(newLjId) + ","+ str(course[0]) + ")"
             cursor.execute(query2)
             db_connection.commit()
         print("completed")
@@ -160,61 +160,6 @@ def create_lj():
         return jsonify({
             "message": "Unable to commit to database."
         }), 500
-
-# sample
-# @app.route("/consultations", methods=['POST'])
-# def create_consultation():
-#     data = request.get_json()
-#     if not all(key in data.keys() for
-#                key in ('doctor_id', 'patient_id',
-#                        'diagnosis', 'prescription', 'length')):
-#         return jsonify({
-#             "message": "Incorrect JSON object provided."
-#         }), 500
-
-#     # (1): Validate doctor
-#     doctor = Doctor.query.filter_by(id=data['doctor_id']).first()
-#     if not doctor:
-#         return jsonify({
-#             "message": "Doctor not valid."
-#         }), 500
-
-#     # (2): Compute charges
-#     charge = doctor.calculate_charges(data['length'])
-
-#     # (3): Validate patient
-#     patient = Patient.query.filter_by(id=data['patient_id']).first()
-#     if not patient:
-#         return jsonify({
-#             "message": "Patient not valid."
-#         }), 500
-
-#     # (4): Subtract charges from patient's e-wallet
-#     try:
-#         patient.ewallet_withdraw(charge)
-#     except Exception:
-#         return jsonify({
-#             "message": "Patient does not have enough e-wallet funds."
-#         }), 500
-
-#     # (4): Create consultation record
-#     consultation = Consultation(
-#         diagnosis=data['diagnosis'], prescription=data['prescription'],
-#         doctor_id=data['doctor_id'], patient_id=data['patient_id'],
-#         charge=charge
-#     )
-
-#     # (5): Commit to DB
-#     try:
-#         db.session.add(consultation)
-#         db.session.commit()
-#         return jsonify(consultation.to_dict()), 201
-#     except Exception:
-#         return jsonify({
-#             "message": "Unable to commit to database."
-#         }), 500
-
-
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

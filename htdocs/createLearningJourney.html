@@ -35,10 +35,10 @@
                 Select a Role:
                 <br>
                 <p v-for="role, id in roles"> 
-                    <input type="radio" v-model="selectedRole" :value="role[0]" @change="onChange()"> {{ role[1] }}
+                    <input type="radio" v-model="selectedRole" :value="role" @change="onChange()"> {{ role[1] }}
                 </p>
                 
-                <p v-if="selectedRole != ''">I have selected role id: {{selectedRole}}</p>
+                <p v-if="selectedRole != ''">I have selected role id: {{selectedRole[1]}}</p>
                 <br>
                 
                 <!-- upon selecting a skill, the relevant courses will dropdown -->
@@ -55,16 +55,17 @@
                     Select Courses:
                     <br>
                     <p v-for="course in courses">
-                        <input type="checkbox" :id="course[0][0]" :value="course[0][0]" v-model="selectedCourses">
+                        <input type="checkbox" :id="course[0][0]" :value="course[0]" v-model="selectedCourses">
                         <label :for="course[0][0]">{{course[0][1]}}:</label> <br>{{course[0][2]}}
                     </p>
                     <br>
                     <p v-if="selectedCourses != ''">
                         I have selected the following courses:
-                        <p v-for="course of selectedCourses">{{ course }}</p>
+                        <p v-for="course of selectedCourses">{{ course[1] }}</p>
                     </p>
                     <br><br>
                 </div>
+                    
                 <a href="./myLearningJourney.html">Cancel</a>
                 <button @click="submitLearningJourney">Submit</button>
             </form>
@@ -91,7 +92,7 @@
             },
             watch: {
                 selectedRole: function (selectedRole) {
-                    axios.get('http://localhost:5000/view_skills/' + selectedRole)
+                    axios.get('http://localhost:5000/view_skills/' + selectedRole[0])
                     .then(response => {
                         this.skills = response.data.data
                     })
@@ -137,7 +138,7 @@
                             })
                         .then(response => {
                                 window.location.replace("./myLearningJourney.html");
-                                return alert("successful creation")
+                                return alert("You have successfully created a learning journey.")
                             })
                         .catch(error => { this.error = error.response.data.message });
                     }
