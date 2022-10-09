@@ -88,7 +88,7 @@ def view_skills(ljRole_Id):
     filteredSkills = []
     for skill in skills:
         if skill[0] == ljRole_Id:
-            filteredSkills.append([skill[3],skill[4]])
+            filteredSkills.append([skill[3],skill[4], skill[5]])
     return jsonify(
         {
             "data": filteredSkills

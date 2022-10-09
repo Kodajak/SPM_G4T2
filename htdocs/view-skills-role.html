@@ -44,38 +44,44 @@
         <table id="dpositionTable" class='table table-striped' border='1'>
             <thead class='thead-dark'>
                 <tr>
-                    <th>Role ID</th>
-                    <th>Role Name</th>
-                    <th>Role Description</th>
                     <th>Skill ID</th>
                     <th>Skill Description</th>
                     <th>Active</th>
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="(skill_id, index) in skills">
-                    <td><strong>#{{ index }}</strong></td>
-                    <td>{{ skill_id[0]  }}</td>
-                    <td>{{ skill_id[1] }}</td>
-                    <td>{{ skill_id[2] }}</td>
-                    <td>{{ skill_id[3] }}</td>
-                    <td>{{ skill_id[4] }}</td>
+                <tr v-for="skill in skills">
+                    <td><strong>#{{ skill[0] }}</strong></td>
+                    <td>{{ skill[1]  }}</td>
+                    <td>{{ skill[2] }}</td>
                 </tr>
             </tbody>
         </table>
 
-        <p>
-            <em><strong>Pages:</strong> <a href="create-consultation.html">Create Consultation Records</a></em>
-        </p>
     </div>
     <script>
         const vm = new Vue({
             el: '#main-container',
             data: {
-                skills: []
+                roles:[],
+                selectedRole: '',
+                skills: [],
+                selectedSkill: '',
+                courses: [],
+                selectedCourses: [],
+                error:''
             },
+            // watch:{
+            //     selectedRole: function(selectedRole){
+            //         axios.get('http://localhost:5000/view_skills/' + selectedRole)
+            //         .then(response => {
+            //             this.skills = response.data.data
+            //         })
+            //         .catch(error => alert(error));
+            //     }
+            // },
             mounted: function() {
-                axios.get('http://localhost:5000/view_skills')
+                axios.get('http://localhost:5000/view_skills/' + 777777)
                     .then(response => {
                         this.skills = response.data.data
                     })
