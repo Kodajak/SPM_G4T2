@@ -72,16 +72,21 @@ def create_LJRole():
 
 # to pull out the course id that is under skills
 def getCourse(course_id):
-    query = "SELECT * FROM Course where course_id =" + str(course_id)
+    query = "SELECT DISTINCT * FROM Course WHERE course_status='Active'" + "AND course_id ='" + str(course_id)+"'"
     cursor.execute(query)
     return cursor.fetchall()
 # display it on html
 @app.route("/view-course-skills/<int:skillID>")
 def skill_by_course(skillID):
 
-    query = "SELECT course_id FROM Course_Skill where skill_id =" + str(skillID)
+    query = "SELECT course_id FROM Course_Skill WHERE skill_id =" + str(skillID)
     cursor.execute(query)
     courseUnderSkill = cursor.fetchall()
+
+    query = "SELECT skill_desc FROM Skill WHERE skill_id =" + str(skillID)
+    cursor.execute(query)
+    skill = cursor.fetchall()
+    print(skill)
     courses = []
     for id in courseUnderSkill:
         courses.append(getCourse(id[0]))
@@ -90,7 +95,8 @@ def skill_by_course(skillID):
     return jsonify(
         {
             
-            "data": courses
+            "data": courses,
+            "skill":skill
             # "data": {
             #     "courses": [course.json() for course in course_skills]
             # }
