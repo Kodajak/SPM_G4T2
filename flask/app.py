@@ -1,10 +1,10 @@
 from sqlite3 import Cursor
+from urllib import response
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 import mysql.connector as mysql
-import requests
-import json
+
 
 
 app = Flask(__name__)
@@ -51,6 +51,24 @@ def view_LJRole ():
             "data": ljRoles
         }
     ), 200
+
+@app.route("/create_ljRoles", methods=['POST'])
+
+def create_LJRole():
+    response_object = {'status': 'success'}
+    data = {}
+    if (request.method=='POST'):
+        data = request.get_json()
+        role = data['data'][0]
+        desc = data['data'][1]
+
+        query2 = "INSERT INTO LJRole (ljrole_name, ljrole_desc) VALUES (%s, %s)"
+        val = (role,desc)
+        cursor.execute(query2, val)
+        db_connection.commit()
+    else:
+        response_object['msg']="error"
+    return role
 
 # to pull out the course id that is under skills
 def getCourse(course_id):
