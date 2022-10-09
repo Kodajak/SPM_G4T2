@@ -56,37 +56,52 @@
                 </tr>
             </tbody>
         </table>
+    <hr>
+        <div>
+            <Hr>
+                <h1 class="display-5">Enter New Role</h1>
+                <form>
+                    Role Name:
+                    <input type="text" id="role_name" name="role" v-model="new_role"><br><br>
+                    
+                    Description:
+                    <input type="text" id="role_desc" name="role" v-model="description"><br><br>
+                    <button type="submit" v-on:click="createLJRoles()">
+                        Submit
+                    </button>
+                </form>
+        </div>
     </div>
-
-    <div>
-        <Hr>
-            <h1 class="display-5">Enter New Role</h1>
-            <form onsubmit="">
-                <input type="text" id="role_name" name="role"><br><br>
-                <input type="submit" id="submit_role" value="Submit">
-            </form>
-    </div>
-
-    <script>
-        // async function add_to_DB(){
-        //      await axios.get('http://localhost:5000/create_roles')
-        //         .then(response => {
-        //             console.log(response.data.data)
-        //         })
-        //         .catch(error => alert(error));
-        // }
-    </script>
 
     <script>
         const vm = new Vue({
             el: '#main-container',
             data: {
-                roles: []
+                roles: [],
+                new_role: "",
+                description:""
             },
             methods:{
-                viewLJRoles(roleID){
+                // viewLJRoles(roleID){
                     
+                // },
+                createLJRoles: function(){
+                event.preventDefault()
+                    if(this.new_role in this.roles){
+                        return alert("Role exists")
+                    }else if(this.new_role==""){
+                        return alert("Enter role name")
+                    }
+                    else{
+                        axios.post("http://localhost:5000/create_ljRoles", {"data":[this.new_role,this.description]})
+                            .then(response=>{
+                                window.location.replace("./view-roles.html")
+                                console.log(response)
+                            })
+                            .catch(error=>{this.error = error.response.data.message })
+                    }
                 }
+
             },
             mounted: function() {
                 axios.get('http://localhost:5000/view_ljRoles')
