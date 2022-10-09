@@ -52,7 +52,7 @@
             <tbody>
                 <tr v-for="skill in skills">
                     <td><strong>#{{ skill[0] }}</strong></td>
-                    <td><a v-bind:href="'/SPMProject/SPM%2520Project/htdocs/view-skill-courses.html?skill_id='+skill[0]">{{ skill[1]  }}</a></td>
+                    <td><a v-bind:href="'view-skill-courses.html?skill_id='+skill[0]">{{ skill[1]  }}</a></td>
                     <td>{{ skill[2] }}</td>
                 </tr>
             </tbody>
@@ -81,7 +81,9 @@
             //     }
             // },
             mounted: function() {
-                axios.get('http://localhost:5000/view_skills/' + 777777)
+                let urlParams = new URLSearchParams(window.location.search);
+                let myParam = urlParams.get('role_id');
+                axios.get('http://localhost:5000/view_skills/' + myParam)
                     .then(response => {
                         this.skills = response.data.data
                     })
