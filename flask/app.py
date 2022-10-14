@@ -52,8 +52,86 @@ def view_LJRole ():
         }
     ), 200
 
-@app.route("/create_ljRoles", methods=['POST'])
+@app.route("/view_Skills")
+def view_allSkills ():
+    query = "SELECT * FROM Skill"
+    cursor.execute(query)
+    allSkills = cursor.fetchall()
+    return jsonify(
+        {
+            "data": allSkills
+        }
+    ), 200
 
+@app.route("/get_CourseSkill")
+def get_CourseSkill ():
+    query = "SELECT * FROM Course_Skill"
+    cursor.execute(query)
+    courseSkill = cursor.fetchall()
+    return jsonify(
+        {
+            "data": courseSkill
+        }
+    ), 200
+
+@app.route("/create_Skill", methods=['POST'])
+def create_Skills():
+    response_object = {'status': 'success'}
+    data = {}
+    if (request.method=='POST'):
+        data = request.get_json()
+        skill = data['data'][0]
+
+        query2 = "INSERT INTO Skill (skill_desc, active) VALUES (%s, %s)"
+        val = (skill, 1)
+        cursor.execute(query2, val)
+        db_connection.commit()
+    else:
+        response_object['msg']="error"
+    return skill + ' saved'
+
+@app.route("/delete_Skill/<int:id>", methods=['DELETE'])
+def delete_Skill(id):
+    response_object = {'status': 'success'}
+    id = str(id)
+    if (request.method=='DELETE'):
+        query = "DELETE FROM Skill WHERE skill_id =" + id 
+        cursor.execute(query)
+        db_connection.commit()
+    else:
+        response_object['msg']="error"
+    return 'skill' + id + ' deleted'
+
+@app.route("/softDelete_Skill/<int:id>", methods=['POST'])
+def softDelete_Skill(id):
+    response_object = {'status': 'success'}
+    id = str(id)
+    if (request.method=='POST'):
+        query = "UPDATE Skill SET active=0 WHERE skill_id=" + id
+        cursor.execute(query)
+        db_connection.commit()
+    else:
+        response_object['msg']="error"
+    return 'skill' + id + ' deleted'
+
+@app.route("/edit_Skill", methods=['GET', 'POST'])
+def edit_Skill():
+    response_object = {'status': 'success'}
+    data = {}
+    if (request.method=='POST'):
+        data = request.get_json()
+        skill_desc = data['data'][0][1]
+        skill_id = str(data['data'][0][0])
+
+        query = "UPDATE Skill SET skill_desc=%s WHERE skill_id=%s"
+        val = (skill_desc, skill_id)
+        cursor.execute(query, val)
+        db_connection.commit()
+    else:
+        response_object['msg']="error"
+    return 'skill ' + str(skill_id) + ' edited'
+
+@app.route("/create_ljRoles", methods=['POST'])
 def create_LJRole():
     response_object = {'status': 'success'}
     data = {}
