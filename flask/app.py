@@ -80,15 +80,16 @@ def create_Skills():
     data = {}
     if (request.method=='POST'):
         data = request.get_json()
-        skill = data['data'][0]
+        skillName = data['data'][0]
+        skillDesc = data['data'][1]
 
-        query2 = "INSERT INTO Skill (skill_desc, active) VALUES (%s, %s)"
-        val = (skill, 1)
+        query2 = "INSERT INTO Skill (skill_name, skill_desc, status) VALUES (%s, %s, %s)"
+        val = (skillName, skillDesc, 1)
         cursor.execute(query2, val)
         db_connection.commit()
     else:
         response_object['msg']="error"
-    return skill + ' saved'
+    return skillName + ' saved'
 
 @app.route("/delete_Skill/<int:id>", methods=['DELETE'])
 def delete_Skill(id):
@@ -120,11 +121,12 @@ def edit_Skill():
     data = {}
     if (request.method=='POST'):
         data = request.get_json()
-        skill_desc = data['data'][0][1]
+        skill_name = data['data'][0][1]
+        skill_desc = data['data'][0][2]
         skill_id = str(data['data'][0][0])
 
-        query = "UPDATE Skill SET skill_desc=%s WHERE skill_id=%s"
-        val = (skill_desc, skill_id)
+        query = "UPDATE Skill SET skill_name=%s, skill_desc=%s WHERE skill_id=%s"
+        val = (skill_name, skill_desc, skill_id)
         cursor.execute(query, val)
         db_connection.commit()
     else:

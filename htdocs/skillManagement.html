@@ -43,7 +43,8 @@
             <thead class='thead-dark'>
                 <tr>
                     <th>ID</th>
-                    <th>Skills</th>
+                    <th class="w-25">Skills</th>
+                    <th class="w-50">Skill Description</th>
                     <!-- <th>Mapped to Course?</th> -->
                     <th>Status</th>
                     <th></th>
@@ -54,9 +55,10 @@
                 <tr v-for="skill, id in allSkills">
                     <td><strong>#{{ skill[0] }}</strong></td>
                     <td><a>{{ skill[1] }}</a></td>
+                    <td><a>{{ skill[2] }}</a></td>
                     <!-- <td v-if="skillsWithCourses.includes(skill[0])">True</td>
                     <td v-else>False</td> -->
-                    <td v-if="skill[2] == 1">Active</td>
+                    <td v-if="skill[3] == 1">Active</td>
                     <td v-else>Inactive</td>
                     <td><button type="button" data-toggle="modal" data-target="#editModal" @click="sendInfo(skill)">Edit</button></td>
                     <td v-if="skillsWithCourses.includes(skill[0])"><button disabled type="button" data-toggle="modal" data-target="#deleteModal">Delete</button></td>
@@ -75,7 +77,16 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <input class="w-100" v-model="skilltoEdit">
+                    <form>
+                        <div class="form-group">
+                            <label for="recipient-name" class="col-form-label">Skill Name:</label>
+                                <input class="w-100" v-model="skillNametoEdit">
+                        </div>
+                        <div class="form-group">
+                            <label for="message-text" class="col-form-label">Skill Description:</label>
+                            <textarea class="form-control" v-model="skillDesctoEdit" id="message-text"></textarea>
+                        </div>
+                    </form>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -99,7 +110,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button v-if="modalSkill[2] == 1" type="button" class="btn btn-info" @click="softDelete_Skill(modalSkill)">Hide</button>
+                    <button v-if="modalSkill[3] == 1" type="button" class="btn btn-info" @click="softDelete_Skill(modalSkill)">Hide</button>
                     <button type="button" class="btn btn-danger" @click="delete_Skill(modalSkill)">Delete</button>
                 </div>
                 </div>
@@ -110,7 +121,9 @@
             <h1 class="display-5">Enter New Skill</h1>
             <form>
                 Skill Name:
-                <input type="text" id="skill_name" name="skill" v-model="new_Skill"><br><br>
+                <input type="text" class="w-100" id="skill_name" name="skill" v-model="new_SkillName"><br><br>
+                Skill Description:
+                <input type="text" class="w-100" id="skill_desc" name="skill" v-model="new_SkillDesc"><br><br>
                 
                 <button type="submit" v-on:click="create_Skill()">
                     Create
@@ -126,14 +139,17 @@
             data: {
                 allSkills: [],
                 skillsWithCourses: [],
-                new_Skill: '',
+                new_SkillName: '',
+                new_SkillDesc: '',
                 modalSkill: '',
-                skilltoEdit: this.modalSkill 
+                skillNametoEdit: this.modalSkill,
+                skillDesctoEdit: this.modalSkill
             },
             methods:{
                 sendInfo(skill) {
                     this.modalSkill = skill;
-                    this.skilltoEdit = skill[1]
+                    this.skillNametoEdit = skill[1]
+                    this.skillDesctoEdit = skill[2]
                 },
                 delete_Skill(skillToDelete){
                     console.log(skillToDelete)
@@ -155,9 +171,11 @@
                 },
                 edit_Skill(){
                     event.preventDefault()
-                    this.skilltoEdit = this.skilltoEdit.trim()
-                    this.modalSkill[1] = this.skilltoEdit
-                    if (this.modalSkill[1] != ""){
+                    this.skillNametoEdit = this.skillNametoEdit.trim()
+                    this.modalSkill[1] = this.skillNametoEdit
+                    this.skillDesctoEdit = this.skillDesctoEdit.trim()
+                    this.modalSkill[2] = this.skillDesctoEdit
+                    if (this.modalSkill[1] != "" && this.modalSkill[2] != ""){
                         axios.post("http://localhost:5000/edit_Skill", {"data":[this.modalSkill]})
                             .then(response=>{
                                 window.location.reload()
@@ -172,20 +190,23 @@
                 },                
                 create_Skill(){
                 event.preventDefault()
-                console.log(this.new_Skill)
-                this.new_Skill = this.new_Skill.trim()
+                console.log(this.new_SkillName)
+                this.new_SkillName = this.new_SkillName.trim()
+                this.new_SkillDesc = this.new_SkillDesc.trim()
                 skillArr = []
                     for (skill of this.allSkills){
-                        skillArr.push(skill[1])
+                        skillArr.push(skill[1].toLowerCase())
                     }
-                    if(skillArr.includes(this.new_Skill)){
-                        this.new_Skill = ""
+                    console.log(skillArr)
+                    if(skillArr.includes(this.new_SkillName.toLowerCase())){
+                        this.new_SkillName = ""
+                        this.new_SkillDesc = ""
                         return alert("Skill exists")
-                    }else if(this.new_Skill==""){
-                        return alert("Enter skill name")
+                    }else if(this.new_SkillName=="" || this.new_SkillDesc==""){
+                        return alert("Skill Name/Description is blank!")
                     }
                     else{
-                        axios.post("http://localhost:5000/create_Skill", {"data":[this.new_Skill]})
+                        axios.post("http://localhost:5000/create_Skill", {"data":[this.new_SkillName, this.new_SkillDesc]})
                             .then(response=>{
                                 window.location.reload()
                                 console.log(response)
