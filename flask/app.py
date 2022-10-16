@@ -52,6 +52,38 @@ def view_LJRole ():
         }
     ), 200
 
+# get staff learning journey
+def get_lj(staffId):
+    query = "SELECT ljrole_id FROM LearningJourney WHERE staff_id=" + str(staffId)
+    cursor.execute(query)
+    data = cursor.fetchall()
+    existingRoleIdList = []
+    for i in data:
+        existingRoleIdList.append(i[0])
+    return existingRoleIdList
+
+@app.route("/view_filteredLjRoles/<int:staffId>")
+def view_filteredRoles(staffId):
+    existingRoleId = get_lj(staffId)
+    # get all active roles where active = 0
+    query = "SELECT * FROM LJRole WHERE status = 0"
+    cursor.execute(query)
+    ljRoles = cursor.fetchall()
+    ljFilteredRoles = []
+    existingRoles = []
+    
+    for role in ljRoles:
+        # get roles that are not in existing learning journeys
+        if role[0] not in existingRoleId:
+            ljFilteredRoles.append(role)
+        else:
+            existingRoles.append(role)
+    return jsonify(
+        {
+            "data": [ljFilteredRoles, existingRoles]
+        }
+    ), 200
+
 @app.route("/view_Skills")
 def view_allSkills ():
     query = "SELECT * FROM Skill"
@@ -176,44 +208,45 @@ def getCourse(course_id):
 # display it on html
 @app.route("/view-course-skills/<int:skillID>")
 def skill_by_course(skillID):
-
     query = "SELECT course_id FROM Course_Skill WHERE skill_id =" + str(skillID)
     cursor.execute(query)
     courseUnderSkill = cursor.fetchall()
-
     query = "SELECT skill_desc FROM Skill WHERE skill_id =" + str(skillID)
     cursor.execute(query)
     skill = cursor.fetchall()
-    print(skill)
     courses = []
     for id in courseUnderSkill:
-        courses.append(getCourse(id[0]))
-    print(courses)
-    
+        print(id)
+        # check if function returns empty list
+        if getCourse(id[0]) != []:
+            courses.append(getCourse(id[0]))
     return jsonify(
         {
-            
             "data": courses,
             "skill":skill
-            # "data": {
-            #     "courses": [course.json() for course in course_skills]
-            # }
         }
     )
 
 # get skills based on selected ljRole id
 @app.route("/view_skills/<int:ljRole_Id>")
 def view_skills(ljRole_Id):
-    query = "SELECT LJR.ljrole_id, LJR.ljrole_name, LJR.ljrole_desc, All_skills.skill_id, All_skills.skill_desc, All_skills.Active FROM ((spmDB.LJRole LJR INNER JOIN spmDB.LJRole_Skill LJR_Skill ON LJR.ljrole_id = LJR_Skill.ljrole_id) INNER JOIN spmDB.Skill All_skills ON LJR_Skill.skill_id = All_skills.skill_id)"
-    cursor.execute(query)
+    # get relevant skills ID matched with roleId
+    query1="SELECT skill_id FROM LJRole_Skill WHERE ljrole_id = " + str(ljRole_Id)
+    cursor.execute(query1)
+    skillsId = cursor.fetchall()
+    
+    # get skills that match skills id retrieved earlier and are active 
+    skillsIdQuery = "("
+    for item in skillsId:
+        skillsIdQuery += str(item[0]) + ","
+    skillsIdQuery = skillsIdQuery[:-1]
+    skillsIdQuery += ")"
+    query2 = "SELECT * FROM Skill WHERE status = 0 and skill_id in" + str(skillsIdQuery)
+    cursor.execute(query2)
     skills = cursor.fetchall()
-    filteredSkills = []
-    for skill in skills:
-        if skill[0] == ljRole_Id:
-            filteredSkills.append([skill[3],skill[4], skill[5]])
     return jsonify(
         {
-            "data": filteredSkills
+            "data": skills
         }
     ), 200
 
@@ -231,7 +264,7 @@ def create_lj():
     data = request.get_json()
     print(data)
     if not all(key in data.keys() for
-               key in ('selectedRole', 'selectedCourses')):
+               key in ('staffId', 'selectedRole', 'selectedCourses')):
         return jsonify({
             "message": "Incorrect JSON object provided."
         }), 500
@@ -246,13 +279,13 @@ def create_lj():
     # print(count)
     # sampleRoleId = 22
     # completionStatus = 'Incomplete'
-
+        staffId = data['staffId']
         selectedRole = data['selectedRole']
         print(selectedRole)
         print(type(selectedRole))
-        query = "INSERT INTO LearningJourney (ljrole_id, completion_status) VALUES (%s, %s);"
+        query = "INSERT INTO LearningJourney (staff_id, ljrole_id, completion_status) VALUES (%s, %s, %s);"
 
-        lj_data = (selectedRole[0], 'Incomplete')
+        lj_data = (staffId, selectedRole[0], 'Incomplete')
         cursor.execute(query, lj_data)
         db_connection.commit()
         print("pass 1")
@@ -268,12 +301,13 @@ def create_lj():
         selectedCourses = data['selectedCourses']
         for course in selectedCourses:
             print(course[0])
-            query2 = "INSERT INTO LJourney_Course VALUES (" + str(newLjId) + ","+ str(course[0]) + ")"
-            cursor.execute(query2)
+            query2 = "INSERT INTO LJ_Course VALUES (%s, %s)"
+            course_data = (newLjId, course[0])
+            cursor.execute(query2, course_data)
             db_connection.commit()
         print("completed")
 
-        sample_query2 = "SELECT * FROM LJourney_Course"
+        sample_query2 = "SELECT * FROM LJ_Course"
         cursor.execute(sample_query2)
         print(cursor.fetchall())
         return jsonify("success"), 201
