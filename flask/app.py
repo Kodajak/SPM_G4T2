@@ -51,6 +51,24 @@ def view_LJRole ():
             "data": ljRoles
         }
     ), 200
+# update status to active/inactive
+@app.route("/softDelete_ljrole", methods=['POST'])
+def softDelete_role():
+    response_object = {'status': 'success'}
+    if (request.method=='POST'):
+        data = request.get_json()
+        id = str(data['data'][0][0])
+        stat = data['data'][0][3]
+        if(stat==1):
+            stat=0
+        else:
+            stat=1
+        query = "UPDATE LJRole SET status="+str(stat)+" WHERE ljrole_id= " + id
+        cursor.execute(query)
+        db_connection.commit()
+    else:
+        response_object['msg']="error"
+    return 'ljrole' + id + ' status changed'
 
 # get staff learning journey
 def get_lj(staffId):

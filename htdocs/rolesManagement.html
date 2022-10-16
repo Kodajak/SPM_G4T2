@@ -45,7 +45,7 @@
                     <th>ID</th>
                     <th>Roles Available</th>
                     <th>Role Description</th>
-                    <th></th>
+                    <th>Status</th>
                     <th></th>
 
                 </tr>
@@ -55,8 +55,10 @@
                     <td><strong>#{{ role[0] }}</strong></td>
                     <td><a v-bind:href="'view-skills-role.html?role_id='+role[0]">{{ role[1] }}</a></td>
                     <td><strong>{{ role[2] }}</strong></td>
+                    <td style="width: 15%;" v-if="role[3]==1"><button @click="changeStat(role)">Active</button></td>
+                    <td style="width: 15%;" v-else><button @click="changeStat(role)">In-Active</button></td>
                     <td><button type="button" data-toggle="modal" data-target="#editModal" @click="sendInfo(role)">Edit</button></td>
-                    <td></td>
+                    <!-- <td></td> -->
                 </tr>
             </tbody>
         </table>
@@ -114,7 +116,8 @@
                 new_RoleDesc:"",
                 modalRole: '',
                 roleNametoEdit: this.modalRole,
-                roleDesctoEdit: this.modalRole
+                roleDesctoEdit: this.modalRole,
+                stat_change:""
             },
             methods:{
                 // viewLJRoles(roleID){
@@ -159,6 +162,16 @@
                             })
                             .catch(error=>{this.error = error.response.data.message })
                     }
+                },
+                changeStat(role){
+                    this.stat_change = role
+                    console.log(role)
+                    axios.post("http://localhost:5000/softDelete_ljrole",{"data":[this.stat_change]})
+                    .then(response=>{
+                                window.location.reload()
+                                console.log(response)
+                            })
+                            .catch(error=>{this.error = error.response})
                 }
 
             },
