@@ -45,27 +45,59 @@
                     <th>ID</th>
                     <th>Roles Available</th>
                     <th>Role Description</th>
+                    <th></th>
+                    <th></th>
 
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="role, id in roles">
+                <tr v-for="role, id in allRoles">
                     <td><strong>#{{ role[0] }}</strong></td>
                     <td><a v-bind:href="'view-skills-role.html?role_id='+role[0]">{{ role[1] }}</a></td>
                     <td><strong>{{ role[2] }}</strong></td>
+                    <td><button type="button" data-toggle="modal" data-target="#editModal" @click="sendInfo(role)">Edit</button></td>
+                    <td></td>
                 </tr>
             </tbody>
         </table>
-    <hr>
+        <div class="modal fade" id="editModal" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Edit Role</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="form-group">
+                            <label for="recipient-name" class="col-form-label">Role Name:</label>
+                                <input class="w-100" v-model="roleNametoEdit">
+                        </div>
+                        <div class="form-group">
+                            <label for="message-text" class="col-form-label">Role Description:</label>
+                            <textarea class="form-control" v-model="roleDesctoEdit" id="message-text"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" @click="edit_Role(modalRole)" data-dismiss="modal">Save changes</button>
+                </div>
+                </div>
+            </div>
+        </div>
+
         <div>
             <Hr>
                 <h1 class="display-5">Enter New Role</h1>
                 <form>
                     Role Name:
-                    <input type="text" id="role_name" name="role" v-model="new_role"><br><br>
+                    <input type="text" class = 'w-100' id="role_name" name="role" v-model="new_RoleName"><br><br>
                     
                     Description:
-                    <input type="text" id="role_desc" name="role" v-model="description"><br><br>
+                    <input type="text" class = 'w-100' id="role_desc" name="role" v-model="new_RoleDesc"><br><br>
                     <button type="submit" v-on:click="createLJRoles()">
                         Submit
                     </button>
@@ -77,23 +109,50 @@
         const vm = new Vue({
             el: '#main-container',
             data: {
-                roles: [],
-                new_role: "",
-                description:""
+                allRoles: [],
+                new_RoleName: "",
+                new_RoleDesc:"",
+                modalRole: '',
+                roleNametoEdit: this.modalRole,
+                roleDesctoEdit: this.modalRole
             },
             methods:{
                 // viewLJRoles(roleID){
                     
                 // },
+                sendInfo(role) {
+                    this.modalRole = role;
+                    this.roleNametoEdit = role[1]
+                    this.roleDesctoEdit = role[2]
+                },
+                edit_Role(){
+                    event.preventDefault()
+                    this.roleNametoEdit = this.roleNametoEdit.trim()
+                    this.modalRole[1] = this.roleNametoEdit
+                    this.roleDesctoEdit = this.roleDesctoEdit.trim()
+                    this.modalRole[2] = this.roleDesctoEdit
+                    if (this.modalRole[1] != "" && this.modalRole[2] != ""){
+                        axios.post("http://localhost:5000/edit_Role", {"data":[this.modalRole]})
+                            .then(response=>{
+                                window.location.reload()
+                                console.log(response)
+                            })
+                            .catch(error=>{this.error = error.response})
+                    }
+                    else{
+                        return alert("Input field is empty!")
+                    }
+                    
+                },   
                 createLJRoles: function(){
                 event.preventDefault()
-                    if(this.new_role in this.roles){
+                    if(this.new_RoleName in this.roles){
                         return alert("Role exists")
-                    }else if(this.new_role==""){
+                    }else if(this.new_RoleName==""){
                         return alert("Enter role name")
                     }
                     else{
-                        axios.post("http://localhost:5000/create_ljRoles", {"data":[this.new_role,this.description]})
+                        axios.post("http://localhost:5000/create_ljRoles", {"data":[this.new_RoleName,this.new_RoleDesc]})
                             .then(response=>{
                                 window.location.replace("./view-roles.html")
                                 console.log(response)
@@ -106,7 +165,7 @@
             mounted: function() {
                 axios.get('http://localhost:5000/view_ljRoles')
                     .then(response => {
-                        this.roles = response.data.data
+                        this.allRoles = response.data.data
                         // console.log(response.data.data)
                     })
                     .catch(error => alert(error));

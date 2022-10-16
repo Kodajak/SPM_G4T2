@@ -133,6 +133,24 @@ def edit_Skill():
         response_object['msg']="error"
     return 'skill ' + str(skill_id) + ' edited'
 
+@app.route("/edit_Role", methods=['GET', 'POST'])
+def edit_Role():
+    response_object = {'status': 'success'}
+    data = {}
+    if (request.method=='POST'):
+        data = request.get_json()
+        role_name = data['data'][0][1]
+        role_desc = data['data'][0][2]
+        role_id = str(data['data'][0][0])
+
+        query = "UPDATE LJRole SET ljrole_name=%s, ljrole_desc=%s WHERE ljrole_id=%s"
+        val = (role_name, role_desc, role_id)
+        cursor.execute(query, val)
+        db_connection.commit()
+    else:
+        response_object['msg']="error"
+    return 'role ' + str(role_id) + ' edited'
+
 @app.route("/create_ljRoles", methods=['POST'])
 def create_LJRole():
     response_object = {'status': 'success'}
