@@ -317,5 +317,53 @@ def create_lj():
             "message": "Unable to commit to database."
         }), 500
 
+@app.route("/view_AllLj/<int:staffId>")
+def get_all_lj(staffId):
+    query = "SELECT * FROM LearningJourney WHERE staff_id =" + str(staffId)
+    cursor.execute(query)
+    lj_list = cursor.fetchall()
+    lj_descriptive_list = []
+    for lj in lj_list:
+        data = []
+        # get role name
+        roleid = lj[2]
+        query = "SELECT ljrole_name FROM LJRole WHERE ljrole_id =" + str(roleid)
+        cursor.execute(query)
+        ljRoleName = cursor.fetchall()
+        ljRoleName = ljRoleName[0][0]
+        
+        # get skills based on chosen courses
+        # get relevant skills ID matched with roleId
+        query1="SELECT skill_id FROM LJRole_Skill WHERE ljrole_id = " + str(roleid)
+        cursor.execute(query1)
+        skillsId = cursor.fetchall()
+        
+        # get skills that match skills id retrieved earlier and are active 
+        skillsIdQuery = "("
+        for item in skillsId:
+            skillsIdQuery += str(item[0]) + ","
+        skillsIdQuery = skillsIdQuery[:-1]
+        skillsIdQuery += ")"
+        query2 = "SELECT * FROM Skill WHERE status = 0 and skill_id in" + str(skillsIdQuery)
+        cursor.execute(query2)
+        skills = cursor.fetchall()
+        skillNames=[]
+        for skill in skills:
+            skillNames.append(skill[1])
+        print(skillNames)
+
+        # get status
+        status = lj[3]
+
+        data = [ljRoleName, skillNames, status]
+        # append as a list to lj_descriptive_list
+        lj_descriptive_list.append(data)
+
+    return jsonify(
+        {
+            "data": lj_descriptive_list
+        }
+    ), 200
+    
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
