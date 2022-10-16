@@ -289,7 +289,7 @@ def create_lj():
             db_connection.commit()
         print("completed")
 
-        sample_query2 = "SELECT * FROM LJourney_Course"
+        sample_query2 = "SELECT * FROM LJ_Course"
         cursor.execute(sample_query2)
         print(cursor.fetchall())
         return jsonify("success"), 201
