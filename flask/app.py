@@ -365,9 +365,12 @@ def get_all_lj(staffId):
         query2 = "SELECT * FROM Skill WHERE status = 0 and skill_id in" + str(skillsIdQuery)
         cursor.execute(query2)
         skills = cursor.fetchall()
-        skillNames=[]
+        skillNames=""
         for skill in skills:
-            skillNames.append(skill[1])
+            if skill != skills[-1]:
+                skillNames += (skill[1]) + ", "
+            else:
+                skillNames += (skill[1])
         print(skillNames)
 
         # get status
