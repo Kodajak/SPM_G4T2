@@ -114,13 +114,24 @@ def view_allSkills ():
     ), 200
 
 @app.route("/get_CourseSkill")
-def get_CourseSkill ():
+def get_CourseSkill():
     query = "SELECT * FROM Course_Skill"
     cursor.execute(query)
     courseSkill = cursor.fetchall()
     return jsonify(
         {
             "data": courseSkill
+        }
+    ), 200
+
+@app.route("/get_RoleSkill")
+def get_RoleSkill():
+    query = "SELECT * FROM LJRole_Skill"
+    cursor.execute(query)
+    roleSkill = cursor.fetchall()
+    return jsonify(
+        {
+            "data": roleSkill
         }
     ), 200
 
