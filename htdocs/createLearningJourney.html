@@ -34,8 +34,14 @@
                 <!-- upon clicking a role, the relevant skills will be shown below -->
                 Select a Role:
                 <br>
-                <p v-for="role, id in roles"> 
+                <!-- roles in roles[0] = roles that can be selected -->
+                <p v-for="role in roles[0]"> 
                     <input type="radio" v-model="selectedRole" :value="role" @change="onChange()"> {{ role[1] }}
+                </p>
+
+                <!-- roles[1] = roles that are in existing journeys -->
+                <p v-for="role in roles[1]">
+                    <input type="radio" disabled> {{ role[1] }}
                 </p>
                 
                 <p v-if="selectedRole != ''">You have selected  {{selectedRole[1]}} as your desired role.</p>
@@ -46,7 +52,7 @@
                     Select a Skill:
                     <br>
                     <p v-for="(skill_id, index) in skills">
-                        <input type="radio" v-model="selectedSkill" :value="skill_id[0]">{{skill_id[1]}}
+                        <input type="radio" name= "skillOptions" v-model="selectedSkill" :value="skill_id[0]">{{skill_id[1]}}
                     </p>
                     <br><br>
                 </div>
@@ -82,6 +88,7 @@
         const vm = new Vue({
             el: '#main-container',
             data: {
+                staffId: 140102,
                 roles: [],
                 selectedRole: '',
                 skills: [],
@@ -104,6 +111,7 @@
                         axios.get('http://localhost:5000/view-course-skills/'+ selectedSkill)
                         .then(response => {
                             this.courses = response.data.data
+                            console.log(this.courses)
                         })
                         .catch(error => alert(error));
                     }
@@ -133,23 +141,30 @@
                     else {
                         
                         axios.post('http://localhost:5000/create_lj', {
+                                staffId: this.staffId,
                                 selectedRole: this.selectedRole,
                                 selectedCourses: this.selectedCourses,
                             })
                         .then(response => {
                                 window.location.replace("./myLearningJourney.html");
+                                
                                 return alert("You have successfully created a learning journey.")
                             })
-                        .catch(error => { this.error = error.response.data.message });
+                        .catch(error => { 
+                            this.error = error.response.data.message 
+                            if (this.error != '') {
+                                return alert(this.error)
+                            }
+                        });
                     }
                 }
             },
             // get roles from db
             mounted: function() {
-                axios.get('http://localhost:5000/view_ljRoles')
+                axios.get('http://localhost:5000/view_filteredLjRoles/' + this.staffId)
                     .then(response => {
+                        // all roles
                         this.roles = response.data.data
-                        // console.log(response.data.data)
                     })
                     .catch(error => alert(error));
             }, 
