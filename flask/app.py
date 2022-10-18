@@ -164,17 +164,23 @@ def delete_Skill(id):
         response_object['msg']="error"
     return 'skill' + id + ' deleted'
 
-@app.route("/softDelete_Skill/<int:id>", methods=['POST'])
-def softDelete_Skill(id):
+@app.route("/switchStatus/<int:id>", methods=['POST'])
+def switchStatus(id):
     response_object = {'status': 'success'}
     id = str(id)
+    data = {}
     if (request.method=='POST'):
-        query = "UPDATE Skill SET active=0 WHERE skill_id=" + id
+        data = request.get_json()
+        if (data['data'][0] == 0):
+            query = "UPDATE Skill SET status=0 WHERE skill_id=" + id
+        else:
+            query = "UPDATE Skill SET status=1 WHERE skill_id=" + id
+
         cursor.execute(query)
         db_connection.commit()
     else:
         response_object['msg']="error"
-    return 'skill' + id + ' deleted'
+    return 'skill' + id + ' switched to ' + str(data['data'][0])
 
 @app.route("/edit_Skill", methods=['GET', 'POST'])
 def edit_Skill():
