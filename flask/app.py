@@ -1,11 +1,15 @@
 from sqlite3 import Cursor
 from urllib import response
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template, request, redirect, url_for
+import os
+from os.path import join, dirname, realpath
+import pandas as pd
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 import mysql.connector as mysql
+import json
 
-
+import requests
 
 app = Flask(__name__)
 # enter your server IP address/domain name
@@ -26,9 +30,42 @@ cursor = db_connection.cursor()
 
 CORS(app)
 
+# enable debugging mode
+app.config["DEBUG"] = True
+
+# Upload folder
+UPLOAD_FOLDER = '/Applications/MAMP/htdocs/SPMProject/SPM%20Project/csv/'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
 @app.route('/')
 def home():
-    return "Hello"
+    return ""
+
+def parseCSV(filePath):
+   # CVS Column Names
+    col_names = ['Course_ID', 'Course_Name', 'Course_Desc', 'Course_Status', 'Course_Type', 'Course_Category']
+    # Use Pandas to parse the CSV file
+    csvData = pd.read_csv(filePath, names = col_names, header = None, encoding= 'unicode_escape', skiprows=1)
+    # Loop through the Rows
+    for i, row in csvData.iterrows():
+        sql = "INSERT INTO Course_Test (Course_ID, Course_Name, Course_Desc, Course_Status, Course_Type, Course_Category) VALUES (%s, %s, %s, %s, %s, %s)"
+        value = (row['Course_ID'], row['Course_Name'], row['Course_Desc'], row['Course_Status'], row['Course_Type'], row['Course_Category'])
+        cursor.execute(sql, value)
+        db_connection.commit()
+        print(value)
+
+@app.route("/import_csv", methods=['POST'])
+def uploadFiles():
+   # get the uploaded file
+    uploaded_file = request.files['file']
+    if uploaded_file.filename != '':
+        # set the file path
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], uploaded_file.filename)
+    # save the file
+    uploaded_file.save(file_path)
+    
+    parseCSV(file_path)
+    return redirect(('http://localhost:8888/SPMProject/SPM%2520Project/htdocs/coursesManagement.html'))
 
 @app.route("/view_roles")
 def view_Role():
@@ -39,7 +76,7 @@ def view_Role():
         {
             "data": dict(role for role in roles)
         }
-    ), 200
+    )
 
 @app.route("/view_ljRoles")
 def view_LJRole ():
@@ -114,13 +151,24 @@ def view_allSkills ():
     ), 200
 
 @app.route("/get_CourseSkill")
-def get_CourseSkill ():
+def get_CourseSkill():
     query = "SELECT * FROM Course_Skill"
     cursor.execute(query)
     courseSkill = cursor.fetchall()
     return jsonify(
         {
             "data": courseSkill
+        }
+    ), 200
+
+@app.route("/get_RoleSkill")
+def get_RoleSkill():
+    query = "SELECT * FROM LJRole_Skill"
+    cursor.execute(query)
+    roleSkill = cursor.fetchall()
+    return jsonify(
+        {
+            "data": roleSkill
         }
     ), 200
 
@@ -153,17 +201,23 @@ def delete_Skill(id):
         response_object['msg']="error"
     return 'skill' + id + ' deleted'
 
-@app.route("/softDelete_Skill/<int:id>", methods=['POST'])
-def softDelete_Skill(id):
+@app.route("/switchStatus/<int:id>", methods=['POST'])
+def switchStatus(id):
     response_object = {'status': 'success'}
     id = str(id)
+    data = {}
     if (request.method=='POST'):
-        query = "UPDATE Skill SET active=0 WHERE skill_id=" + id
+        data = request.get_json()
+        if (data['data'][0] == 0):
+            query = "UPDATE Skill SET status=0 WHERE skill_id=" + id
+        else:
+            query = "UPDATE Skill SET status=1 WHERE skill_id=" + id
+
         cursor.execute(query)
         db_connection.commit()
     else:
         response_object['msg']="error"
-    return 'skill' + id + ' deleted'
+    return 'skill' + id + ' switched to ' + str(data['data'][0])
 
 @app.route("/edit_Skill", methods=['GET', 'POST'])
 def edit_Skill():
@@ -219,11 +273,12 @@ def create_LJRole():
     return role
 
 # to pull out the course id that is under skills
-def getCourse(course_id):
+def getCourseByID(course_id):
     query = "SELECT DISTINCT * FROM Course WHERE course_status='Active'" + "AND course_id ='" + str(course_id)+"'"
     cursor.execute(query)
     return cursor.fetchall()
-# display it on html
+    
+# display course under skills on html
 @app.route("/view-course-skills/<int:skillID>")
 def skill_by_course(skillID):
     query = "SELECT course_id FROM Course_Skill WHERE skill_id =" + str(skillID)
@@ -244,6 +299,148 @@ def skill_by_course(skillID):
             "skill":skill
         }
     )
+
+# display list of courses
+@app.route("/view-course-list")
+def courses():
+    query = "SELECT * FROM Course_Test"
+    cursor.execute(query)
+    courseUnderSkill = cursor.fetchall()
+    return jsonify(
+        {
+            "data": courseUnderSkill
+        }
+    )
+
+# display list of skills
+@app.route("/view-skills")
+def skills():
+    query = "SELECT * FROM Skill"
+    cursor.execute(query)
+    skills = cursor.fetchall()
+    return jsonify(
+        {
+            "data": skills
+        }
+    )
+
+# display skill mapping of roles and courses
+@app.route("/view-skill-mapping/<int:skillID>")
+def skill_mapping(skillID):
+    query = f"SELECT * FROM Skill WHERE skill_id = {skillID}" 
+    cursor.execute(query)
+    skill = cursor.fetchall()
+    
+    queryC = f"SELECT * " \
+    "FROM Course " \
+    "WHERE course_id IN (SELECT DISTINCT courseid from (SELECT DISTINCT c.course_id as courseid " \
+	"FROM Skill s, Course_Skill c " \
+    "WHERE s.skill_id = c.skill_id " \
+	f"AND s.skill_id = {skillID}) as RCS);"
+    cursor.execute(queryC)
+    courseUnderSkill = cursor.fetchall()
+
+    queryR = f"SELECT * "\
+    "FROM LJRole "\
+    "WHERE ljrole_id IN (SELECT DISTINCT roleid from (SELECT DISTINCT r.ljrole_id as roleid "\
+	"FROM Skill s, LJRole_Skill r, Course_Skill c " \
+	"WHERE s.skill_id = r.skill_id " \
+	f"AND s.skill_id = {skillID}) as RCS);" 
+    cursor.execute(queryR)
+    roleUnderSkill = cursor.fetchall()
+
+    return jsonify(
+        {
+            "skill" : skill,
+            "roles": roleUnderSkill,
+            "courses": courseUnderSkill
+        }
+    )
+
+# show skill mapping of roles and courses
+@app.route("/update-skill-mapping/<int:skillID>")
+def update_skill_mapping(skillID):
+    
+    view_Role()
+    courses()
+    courseList = requests.get("http://0.0.0.0:5000/view-course-list")
+    courseList.raise_for_status()
+    jsoncourseList = courseList.json()
+    # rename key in dictionary
+    jsoncourseList["courses"] = jsoncourseList.pop("data") 
+    print(jsoncourseList)
+
+    skill = "SELECT * FROM Skill WHERE skill_id="+str(skillID)
+    cursor.execute(skill)
+    skill = cursor.fetchall()
+    print(skill)
+
+    roleList = requests.get("http://0.0.0.0:5000/view_ljRoles")
+    roleList.raise_for_status()
+    jsonroleList = roleList.json()
+    # rename key in dictionary
+    jsonroleList["roles"] = jsonroleList.pop("data") 
+    print(jsonroleList)
+
+    csr = {}
+    
+    csr.update(jsonroleList)
+    csr.update(jsoncourseList)
+    return jsonify(
+        {
+            "skill" : skill,
+            "roles": csr['roles'],
+            "courses": csr['courses']
+        }
+    )
+# create skill mapping
+@app.route("/submit-mapping/<int:skillID>", methods=["POST"])
+def submit_mapping(skillID):
+    # check for missing inputs
+    data = request.get_json()
+    print(data)
+    if not all(key in data.keys() for
+               key in ('selectedRoles', 'selectedCourses')):
+        return jsonify({
+            "message": "Incorrect JSON object provided."
+        }), 500
+  
+    # if form validation succesful
+    try:
+        selectedRoles = data['selectedRoles']
+        print(selectedRoles)
+        for role in selectedRoles:
+            query = "INSERT INTO LJRole_Skill (ljrole_id, skill_id) VALUES (%s, %s);"
+
+            ljrole_skill_data = (role, skillID)
+            cursor.execute(query, ljrole_skill_data)
+            db_connection.commit()
+            print("pass")
+
+        checking = "SELECT * FROM LJRole_Skill;"
+        cursor.execute(checking)
+        print(cursor.fetchall())
+
+        selectedCourses = data['selectedCourses']
+        print(selectedCourses)
+
+        for course in selectedCourses:
+            query2 = "INSERT INTO Course_Skill(course_id, skill_id) VALUES (%s,%s);"
+            course_skill_data = (course, skillID)
+            cursor.execute(query2, course_skill_data)
+            db_connection.commit()
+            print("pass")
+        print("completed")
+
+        checking = "SELECT * FROM Course_Skill"
+        cursor.execute(checking)
+        print(cursor.fetchall())
+        return jsonify("success"), 201
+
+    except Exception:
+        return jsonify({
+            "message": "Unable to commit to database."
+        }), 500
 
 # get skills based on selected ljRole id
 @app.route("/view_skills/<int:ljRole_Id>")

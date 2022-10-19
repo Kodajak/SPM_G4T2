@@ -58,9 +58,10 @@
                     <td><a>{{ skill[2] }}</a></td>
                     <!-- <td v-if="skillsWithCourses.includes(skill[0])">True</td>
                     <td v-else>False</td> -->
-                    <td v-if="skill[3] == 1">Active</td>
-                    <td v-else>Inactive</td>
-                    <td><button type="button" data-toggle="modal" data-target="#editModal" @click="sendInfo(skill)">Edit</button></td>
+                    <td v-if="skill[3] == 1"><button @click="switchStatus(skill)">Active</button></td>
+                    <td v-else><button @click="switchStatus(skill)">Inactive</button></td>
+                    <td v-if="skillsWithCourses.includes(skill[0]) || skillsWithRoles.includes(skill[0])"><button disabled type="button" data-toggle="modal" data-target="#editModal" @click="sendInfo(skill)">Edit</button></td>
+                    <td v-else><button type="button" data-toggle="modal" data-target="#editModal" @click="sendInfo(skill)">Edit</button></td>
                     <td v-if="skillsWithCourses.includes(skill[0])"><button disabled type="button" data-toggle="modal" data-target="#deleteModal">Delete</button></td>
                     <td v-else><button type="button" data-toggle="modal" data-target="#deleteModal" @click="sendInfo(skill)">Delete</button></td>
                 </tr>
@@ -110,7 +111,6 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button v-if="modalSkill[3] == 1" type="button" class="btn btn-info" @click="softDelete_Skill(modalSkill)">Hide</button>
                     <button type="button" class="btn btn-danger" @click="delete_Skill(modalSkill)">Delete</button>
                 </div>
                 </div>
@@ -139,6 +139,7 @@
             data: {
                 allSkills: [],
                 skillsWithCourses: [],
+                skillsWithRoles:[],
                 new_SkillName: '',
                 new_SkillDesc: '',
                 modalSkill: '',
@@ -160,14 +161,24 @@
                             })
                             .catch(error=>{this.error = error.response })
                 },
-                softDelete_Skill(skillToDelete){
-                    console.log(skillToDelete)
-                    axios.post("http://localhost:5000/softDelete_Skill/" + skillToDelete[0])
+                switchStatus(skillToSwitch){
+                    console.log(skillToSwitch)
+                    if (skillToSwitch[3] == 1){
+                        axios.post("http://localhost:5000/switchStatus/" + skillToSwitch[0], {"data":[0]})
                             .then(response=>{
                                 window.location.reload()
                                 console.log(response)
                             })
                             .catch(error=>{this.error = error.response})
+                    }
+                    else{
+                        axios.post("http://localhost:5000/switchStatus/" + skillToSwitch[0], {"data":[1]})
+                            .then(response=>{
+                                window.location.reload()
+                                console.log(response)
+                            })
+                            .catch(error=>{this.error = error.response})
+                    }
                 },
                 edit_Skill(){
                     event.preventDefault()
@@ -222,13 +233,24 @@
                         console.log(response.data.data) 
                         axios.get('http://localhost:5000/get_CourseSkill')
                             .then(response2 => {
-                                var arr = []
+                                var skillCourseArr = []
                                 for (const courseSkillPair of response2.data.data){
-                                    if (arr.includes(courseSkillPair[1]) == false){
-                                        arr.push(courseSkillPair[1])
+                                    if (skillCourseArr.includes(courseSkillPair[1]) == false){
+                                        skillCourseArr.push(courseSkillPair[1])
                                     }
                                 }
-                                this.skillsWithCourses = arr
+                                this.skillsWithCourses = skillCourseArr
+
+                                axios.get('http://localhost:5000/get_RoleSkill')
+                                    .then(response3 => {
+                                        var skillRoleArr = []
+                                        for (const courseSkillPair of response3.data.data){
+                                            if (skillRoleArr.includes(courseSkillPair[1]) == false){
+                                                skillRoleArr.push(courseSkillPair[1])
+                                            }
+                                        }
+                                        this.skillsWithRoles = skillRoleArr
+                                    })
                             })
                     })
                     .catch(error => alert(error));
