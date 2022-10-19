@@ -36,14 +36,14 @@
         <div>
 
             <p v-for="journey in lj" >
-                Role: {{journey[0]}}
+                Role: {{journey[1]}}
                 <br>
                 Skills: 
-                <span v-for="skill in journey[1]">{{skill}}</span>
+                <span v-for="skill in journey[2]">{{skill}}</span>
                 <br>
-                Status: {{journey[2]}}
+                Status: {{journey[3]}}
                 <br> 
-                <button>View Details</button>
+                <button @click="viewLearningJourney(journey[0])" :value="journey[0]">View Details</button>
 
                 <br><br>
             </p>
@@ -60,8 +60,21 @@
             el: '#main-container',
             data: {
                 staffId: 140102,
-                lj: [],
+                lj: []
             },
+
+            methods: {
+            viewLearningJourney: function(selectedLj) {
+                console.log(selectedLj)
+                axios.post('http://localhost:5000/view_LjDetails/' + selectedLj, {
+                    selectedLj: selectedLj
+                }) 
+                // .then(response=> {
+                //     return window.location.replace("./learningJourneyDetails.html")
+                // })
+                .catch(error => alert(error))
+            }
+        },
 
             mounted: function() {
                 axios.get('http://localhost:5000/view_AllLj/' + this.staffId)
