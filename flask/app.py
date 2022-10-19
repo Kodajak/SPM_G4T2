@@ -11,7 +11,7 @@ import json
 
 import requests
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='../htdocs')
 # enter your server IP address/domain name
 HOST = "database-1.cmqbhk3xoixj.ap-southeast-1.rds.amazonaws.com" # or "domain.com"
 # database name, if you want just to connect to MySQL server, leave it empty
@@ -552,14 +552,14 @@ def get_all_lj(staffId):
         query1="SELECT skill_id FROM LJRole_Skill WHERE ljrole_id = " + str(roleid)
         cursor.execute(query1)
         skillsId = cursor.fetchall()
-        
+
         # get skills that match skills id retrieved earlier and are active 
         skillsIdQuery = "("
         for item in skillsId:
             skillsIdQuery += str(item[0]) + ","
         skillsIdQuery = skillsIdQuery[:-1]
         skillsIdQuery += ")"
-        query2 = "SELECT * FROM Skill WHERE status = 0 and skill_id in" + str(skillsIdQuery)
+        query2 = "SELECT * FROM Skill WHERE status = 1 and skill_id in" + skillsIdQuery
         cursor.execute(query2)
         skills = cursor.fetchall()
         skillNames=""
@@ -568,20 +568,43 @@ def get_all_lj(staffId):
                 skillNames += (skill[1]) + ", "
             else:
                 skillNames += (skill[1])
-        print(skillNames)
-
+       
         # get status
         status = lj[3]
 
-        data = [ljRoleName, skillNames, status]
+        data = [roleid, ljRoleName, skillNames, status]
         # append as a list to lj_descriptive_list
         lj_descriptive_list.append(data)
-
     return jsonify(
         {
             "data": lj_descriptive_list
         }
     ), 200
+
+@app.route("/view_LjDetails/<int:selectedLj>", methods=["GET", "POST"])
+def view_LjDetails(selectedLj):
+    # selectedLj = request.form.get('selectedLj')
+    print("i am going to render template")
+    print(selectedLj)
+    return render_template('learningJourneyDetails.html', selectedLj=selectedLj)
+
+@app.route("/view_SelectedLjDetail/")
+def view_selectedLjDetail():
+    selectedLj=''
+    # selectedLj = request.args.get('selectedLj')
+    print(selectedLj)
+    ljDetails=''
+    # query = "SELECT * FROM LearningJourney WHERE ljourney_id =" + str(selectedLj)
+    # cursor.execute(query)
+    # ljDetails = cursor.fetchall()
+
+    return jsonify(
+        {
+            "data": selectedLj
+        }
+    ), 200
+    # return ''
+
     
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
