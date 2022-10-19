@@ -170,20 +170,18 @@ def skill_mapping(skillID):
     
     queryC = f"SELECT * " \
     "FROM Course " \
-    "WHERE course_id IN (SELECT DISTINCT courseid from (SELECT DISTINCT r.ljrole_id as roleid, c.course_id as courseid " \
-	"FROM Skill s, LJRole_Skill r, Course_Skill c " \
-    "WHERE s.skill_id = r.skill_id " \
-	"AND s.skill_id = c.skill_id " \
+    "WHERE course_id IN (SELECT DISTINCT courseid from (SELECT DISTINCT c.course_id as courseid " \
+	"FROM Skill s, Course_Skill c " \
+    "WHERE s.skill_id = c.skill_id " \
 	f"AND s.skill_id = {skillID}) as RCS);"
     cursor.execute(queryC)
     courseUnderSkill = cursor.fetchall()
 
     queryR = f"SELECT * "\
     "FROM LJRole "\
-    "WHERE ljrole_id IN (SELECT DISTINCT roleid from (SELECT DISTINCT r.ljrole_id as roleid, c.course_id as courseid "\
+    "WHERE ljrole_id IN (SELECT DISTINCT roleid from (SELECT DISTINCT r.ljrole_id as roleid "\
 	"FROM Skill s, LJRole_Skill r, Course_Skill c " \
 	"WHERE s.skill_id = r.skill_id " \
-	"AND s.skill_id = c.skill_id " \
 	f"AND s.skill_id = {skillID}) as RCS);" 
     cursor.execute(queryR)
     roleUnderSkill = cursor.fetchall()
@@ -196,7 +194,7 @@ def skill_mapping(skillID):
         }
     )
 
-# update skill mapping of roles and courses
+# show skill mapping of roles and courses
 @app.route("/update-skill-mapping/<int:skillID>")
 def update_skill_mapping(skillID):
     
@@ -214,7 +212,7 @@ def update_skill_mapping(skillID):
     skill = cursor.fetchall()
     print(skill)
 
-    roleList = requests.get("http://0.0.0.0:5000/view_roles")
+    roleList = requests.get("http://0.0.0.0:5000/view_ljRoles")
     roleList.raise_for_status()
     jsonroleList = roleList.json()
     # rename key in dictionary
@@ -232,6 +230,54 @@ def update_skill_mapping(skillID):
             "courses": csr['courses']
         }
     )
+# create skill mapping
+@app.route("/submit-mapping/<int:skillID>", methods=["POST"])
+def submit_mapping(skillID):
+    # check for missing inputs
+    data = request.get_json()
+    print(data)
+    if not all(key in data.keys() for
+               key in ('selectedRoles', 'selectedCourses')):
+        return jsonify({
+            "message": "Incorrect JSON object provided."
+        }), 500
+  
+    # if form validation succesful
+    try:
+        selectedRoles = data['selectedRoles']
+        print(selectedRoles)
+        for role in selectedRoles:
+            query = "INSERT INTO LJRole_Skill (ljrole_id, skill_id) VALUES (%s, %s);"
+
+            ljrole_skill_data = (role, skillID)
+            cursor.execute(query, ljrole_skill_data)
+            db_connection.commit()
+            print("pass")
+
+        checking = "SELECT * FROM LJRole_Skill;"
+        cursor.execute(checking)
+        print(cursor.fetchall())
+
+        selectedCourses = data['selectedCourses']
+        print(selectedCourses)
+
+        for course in selectedCourses:
+            query2 = "INSERT INTO Course_Skill(course_id, skill_id) VALUES (%s,%s);"
+            course_skill_data = (course, skillID)
+            cursor.execute(query2, course_skill_data)
+            db_connection.commit()
+            print("pass")
+        print("completed")
+
+        checking = "SELECT * FROM Course_Skill"
+        cursor.execute(checking)
+        print(cursor.fetchall())
+        return jsonify("success"), 201
+
+    except Exception:
+        return jsonify({
+            "message": "Unable to commit to database."
+        }), 500
 
 # get skills based on selected ljRole id
 @app.route("/view_skills/<int:ljRole_Id>")

@@ -9,11 +9,7 @@
     <title>View Consultation Records</title>
 
     <link rel="stylesheet" href="">
-    <!--[if lt IE 9]>
-      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-    <!-- Bootstrap libraries -->
-    <!-- <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"> -->
+    
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -43,67 +39,81 @@
 <body>
     
     <div id="main-container" class="container">
+        <form>
+            <h1 class="display-4">Mapping of {{skills[0][1]}}</h1>
+            <table id="roleTable" class='table table-striped' border='1'>
+                <thead class='thead-dark'>
+                    <tr>
+                        <th>Role Name</th>
+                        <th>Select</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="role in roles">
+                        <td><strong>{{ role[1] }}</strong></td>
+                        <td><input type="checkbox" :id="role[0]" :value="role[0]" v-model="selectedRoles"></td>
+                    </tr>
+                </tbody>
+            </table>
 
-        <h1 class="display-4">List of Skills</h1>
-
-        <table id="skillsTable" class='table table-striped' border='1'>
-            <thead class='thead-dark'>
-                <tr>
-                    <th>Skill</th>
-                    <th>Role</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr v-for="skill in skills">
-                    <td><strong>{{ skill[1] }}</td>
-                </tr>
-            </tbody>
-        </table>
+            <table id="courseTable" class='table table-striped' border='1'>
+                <thead class='thead-dark'>
+                    <tr>
+                        <th>Course Name</th>
+                        <th>Select</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="course in courses">
+                        <td><strong>{{ course[1] }}</strong></td>
+                        <td><input type="checkbox" :id="course[0]" :value="course[0]" v-model="selectedCourses"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </form>
+        <a v-bind:href="'skillMapping.html?skill_id='+skills[0][0]"><button type="submit" class="btn btn-primary mb-2">Cancel Mapping</button></a>
+        <a v-bind:href="'skillMapping.html?skill_id='+skills[0][0]"><button type="submit" class="btn btn-primary mb-2" @click="submitMapping">Submit Mapping</button></a>
+        
     </div>
     <script>
+        let urlParams = new URLSearchParams(window.location.search);
+        let myParam = urlParams.get('skill_id');
         const vm = new Vue({
             el: '#main-container',
             data: {
-                skills: []
+                roles: [],
+                selectedRoles: [],
+                skills: [],
+                courses: [],
+                selectedCourses: [],
+                error: ''
             },
+            methods: {
+                // submit mappings
+                submitMapping: function() {
+                        axios.post('http://localhost:5000/submit-mapping/'+myParam, {
+                                selectedRoles: this.selectedRoles,
+                                selectedCourses: this.selectedCourses,
+                            })
+                        .then(response => {
+                                return alert("You have successfully done your mapping.")
+                            })
+                        .catch(error => { this.error = error.response.data.message });
+                    
+                }
+            },
+            // get etc from db
             mounted: function() {
-                axios.get('http://localhost:5000/view-skills' )
+                axios.get('http://localhost:5000/update-skill-mapping/'+myParam)
                     .then(response => {
-                        this.skills = response.data.data
-                        // console.log(response.data.data)
+                        this.courses = response.data.courses,
+                        this.roles = response.data.roles,
+                        this.skills = response.data.skill
                     })
                     .catch(error => alert(error));
-            }
-        });
-    // Vue.component('skill-comp', {
-    //     props: ['skill'],
-    //     template: '<span><strong>{{skill_desc}}</strong></span>',
-    //     data: function () {
-    //         return {
-    //             skill_desc: ''
-    //         };
-    //     },
-    //     created: function() {
-    //             axios.get('http://localhost:5001/view-course-skills/' + 528631)
-    //                 .then(response => {
-    //                     this.skill_desc = response.data.skills.skillID;
-    //                 })
-    //                 .catch(error => alert(error));
-    //     }
-    // });
-    // const vm = new Vue({
-    //         el: '#main-container',
-    //         data: {
-    //             skills: []
-    //         },
-    //         mounted: function() {
-    //             axios.get('http://localhost:5001/view-course-skills/' + 528631)
-    //                 .then(response => {
-    //                     this.skills = response.data.skills;
-    //                 })
-    //                 .catch(error => alert(error));
-    //         }
-    //     });
+            }, 
+        })
+
     </script>
 </body>
 
