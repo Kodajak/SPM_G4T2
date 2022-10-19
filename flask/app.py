@@ -442,15 +442,14 @@ def submit_mapping(skillID):
             "message": "Unable to commit to database."
         }), 500
 
-# get skills based on selected ljRole id
-@app.route("/view_skills/<int:ljRole_Id>")
-def view_skills(ljRole_Id):
-    # get relevant skills ID matched with roleId
+# get relevant skills ID matched with roleId
+def get_skills_id(ljRole_Id):
     query1="SELECT skill_id FROM LJRole_Skill WHERE ljrole_id = " + str(ljRole_Id)
     cursor.execute(query1)
-    skillsId = cursor.fetchall()
-    
-    # get skills that match skills id retrieved earlier and are active 
+    return cursor.fetchall()
+
+# get skills that match skills id and are active
+def get_active_skill(skillsId):
     skillsIdQuery = "("
     for item in skillsId:
         skillsIdQuery += str(item[0]) + ","
@@ -458,7 +457,16 @@ def view_skills(ljRole_Id):
     skillsIdQuery += ")"
     query2 = "SELECT * FROM Skill WHERE status = 1 and skill_id in" + str(skillsIdQuery)
     cursor.execute(query2)
-    skills = cursor.fetchall()
+    return cursor.fetchall()
+
+# get skills based on selected ljRole id
+@app.route("/view_skills/<int:ljRole_Id>")
+def view_skills(ljRole_Id):
+    # get relevant skills ID matched with roleId
+    skillsId = get_skills_id(ljRole_Id)
+    
+    # get skills that match skills id retrieved earlier and are active 
+    skills = get_active_skill(skillsId)
     return jsonify(
         {
             "data": skills
@@ -524,6 +532,14 @@ def create_lj():
             "message": "Unable to commit to database."
         }), 500
 
+# get role name from role id
+def get_role_name(roleId):
+    query = "SELECT ljrole_name FROM LJRole WHERE ljrole_id =" + str(roleId)
+    cursor.execute(query)
+    ljRoleName = cursor.fetchall()
+    ljRoleName = ljRoleName[0][0]
+    return ljRoleName
+
 @app.route("/view_AllLj/<int:staffId>")
 def get_all_lj(staffId):
     query = "SELECT * FROM LearningJourney WHERE staff_id =" + str(staffId)
@@ -536,27 +552,14 @@ def get_all_lj(staffId):
         
         data = []
         # get role name
-        roleid = lj[2]
-        query = "SELECT ljrole_name FROM LJRole WHERE ljrole_id =" + str(roleid)
-        cursor.execute(query)
-        ljRoleName = cursor.fetchall()
-        ljRoleName = ljRoleName[0][0]
+        roleId = lj[2]
+        ljRoleName = get_role_name(roleId)
         
-        # get skills based on chosen courses
         # get relevant skills ID matched with roleId
-        query1="SELECT skill_id FROM LJRole_Skill WHERE ljrole_id = " + str(roleid)
-        cursor.execute(query1)
-        skillsId = cursor.fetchall()
+        skillsId = get_skills_id(roleId)
 
         # get skills that match skills id retrieved earlier and are active 
-        skillsIdQuery = "("
-        for item in skillsId:
-            skillsIdQuery += str(item[0]) + ","
-        skillsIdQuery = skillsIdQuery[:-1]
-        skillsIdQuery += ")"
-        query2 = "SELECT * FROM Skill WHERE status = 1 and skill_id in" + skillsIdQuery
-        cursor.execute(query2)
-        skills = cursor.fetchall()
+        skills = get_active_skill(skillsId)
         skillNames=""
         for skill in skills:
             if skill != skills[-1]:
@@ -567,8 +570,8 @@ def get_all_lj(staffId):
         # get status
         status = lj[3]
 
-        data = [ljourney_id, roleid, ljRoleName, skillNames, status]
         # append as a list to lj_descriptive_list
+        data = [ljourney_id, roleId, ljRoleName, skillNames, status]
         lj_descriptive_list.append(data)
     return jsonify(
         {
@@ -576,30 +579,85 @@ def get_all_lj(staffId):
         }
     ), 200
 
-@app.route("/view_LjDetails/<int:selectedLj>", methods=["GET", "POST"])
-def view_LjDetails(selectedLj):
-    # selectedLj = request.form.get('selectedLj')
-    print("i am going to render template")
-    print(selectedLj)
-    return render_template('learningJourneyDetails.html', selectedLj=selectedLj)
+# get courses id in learning journey
+def get_lj_courses_id(ljourney_id):
+    query = "SELECT course_id FROM LJ_Course WHERE ljourney_id = " + str(ljourney_id)
+    cursor.execute(query)
+    ljCourseIdList= cursor.fetchall()
+    return ljCourseIdList
 
-@app.route("/view_SelectedLjDetail/")
-def view_selectedLjDetail():
-    selectedLj=''
-    # selectedLj = request.args.get('selectedLj')
-    print(selectedLj)
-    ljDetails=''
-    # query = "SELECT * FROM LearningJourney WHERE ljourney_id =" + str(selectedLj)
-    # cursor.execute(query)
-    # ljDetails = cursor.fetchall()
+# get course details based on course id
+def get_course_details(courseId):
+    query = "SELECT * from Course WHERE course_status='Active' AND course_id='" + str(courseId) + "'"
+    cursor.execute(query)
+    return cursor.fetchall()
 
+@app.route("/view_LjDetails/<int:ljourney_id>")
+def view_LjDetails(ljourney_id):
+    query = "SELECT * FROM LearningJourney WHERE ljourney_id =" + str(ljourney_id)
+    cursor.execute(query)
+    ljDetails = cursor.fetchall()
+    
+    roleId = ljDetails[0][2]
+    roleName= get_role_name(roleId)
+    
+    skillsId = get_skills_id(roleId)
+    skills = get_active_skill(skillsId)
+    skillList = []
+
+    # creating skillList where format = [[skill 1, (acquired/unacquired)], [chosen course names, (completed/ongoing/registered/waitlist/not registered)]]
+    for skill in skills:
+        skillCourseDetails = []
+        courseList = []
+        
+        # get courses under skill
+        query = "SELECT course_id FROM Course_Skill WHERE skill_id=" + str(skill[0])
+        cursor.execute(query)
+        courses_in_skill = cursor.fetchall()
+        skillAcquired = False
+        
+        # check if course chosen
+        for course in courses_in_skill:
+            if course in get_lj_courses_id(ljourney_id):
+                courseDetails = (get_course_details(course[0]))
+                courseId = courseDetails[0][0]
+                courseName = courseDetails[0][1]
+                
+                # check course status and registration
+                # get staffid
+                query = "SELECT staff_id FROM LearningJourney WHERE ljourney_id=" + str(ljourney_id)
+                cursor.execute(query)
+                staffId = cursor.fetchall()
+
+                # get course status and registration
+                query = "SELECT course_id, reg_status, completion_status FROM Registration WHERE staff_id=" + str(staffId[0][0]) + " AND course_id='" + str(courseId) + "'"
+                cursor.execute(query)
+                courseStatusDetails = cursor.fetchall()
+                
+                # extract actual status
+                if courseStatusDetails == []:
+                    courseStatus = "Register Now"
+                else:
+                    if courseStatusDetails[0][2] == '':
+                        courseStatus = courseStatusDetails[0][1]
+                    else:
+                        courseStatus = courseStatusDetails[0][2]
+
+                # match skill acquired with status
+                if courseStatus == "Completed":
+                    skillAcquired = True
+                courseList.append([courseId, courseName, courseStatus])
+        
+        skillCourseDetails = [[skill[1], skillAcquired], courseList]
+        skillList.append(skillCourseDetails)
+    
+    status = ljDetails[0][3]
+    result = [ljourney_id, roleName, skillList, status]
     return jsonify(
         {
-            "data": selectedLj
+            "data": result
         }
     ), 200
-    # return ''
-
 
 @app.route("/deleteLearningJourney/<int:selectedLj>", methods=["DELETE"])
 def deleteLearningJourney(selectedLj):
@@ -609,14 +667,11 @@ def deleteLearningJourney(selectedLj):
         query2 = "DELETE FROM LJ_Course WHERE ljourney_id =" + str(selectedLj)
         cursor.execute(query2)
         db_connection.commit()
-        print("deleted from ljcourse")
-
 
         # delete from learningjourney table
         query = "DELETE FROM LearningJourney WHERE ljourney_id =" + str(selectedLj)
         cursor.execute(query)
         db_connection.commit()
-        print("deleted from learningjourney")
         
         return jsonify("success", 201)
 

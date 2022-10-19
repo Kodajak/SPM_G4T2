@@ -27,10 +27,26 @@
 </head>
 <body>
     <div id="main-container">
-      
-        <p>{{selectedLj}}</p>
-        <!-- <p>{{ljDetails}}</p> -->
-        <p>hello world</p>
+        <button @click="viewAllLearningJourneys">View All Learning Journeys</button><br>
+        <a href="">Edit Courses</a>
+        <button @click="deleteLearningJourney(ljDetails[0])" :value="ljDetails[0]">Delete Learning Journey</button>
+        <br><br>
+
+        <p>Role: {{ljDetails[1]}}</p><br>
+        <p>Status: {{ljDetails[3]}}</p><br>
+        <h5>Skills and Courses:</h5>
+        <p v-for="skill in ljDetails[2]">
+            <b>{{skill[0][0]}}<span v-if="skill[0][1] == true">✅</span>:</b>
+            <br>
+            <span v-if="skill[1] != ''">
+                <span v-for="course in skill[1]">
+                    {{course[1]}} ({{course[2]}})<br>
+                </span>
+            </span>
+
+            <span v-else>You have not added a course for this skill</span>
+        </p><br>
+ 
     </div>
 
 </body>
@@ -38,17 +54,39 @@
     const vm = new Vue({
             el: '#main-container',
             data: {
-                // selectedLj: '',
-                ljDetails: []
+                staffId: 160212,
+                selectedLj: '',
+                ljDetails: '',
             },
 
-            // mounted: function() {
-            //     axios.get('http://localhost:5000/view_SelectedLjDetail/')
-            //     .then(response => {
-            //         // this.selectedLj = response.data.data
-            //     })
-            //     .catch(error=> alert(error))
-            // }
+            methods: {
+                viewAllLearningJourneys: function() {
+                    return window.location.replace("./myLearningJourney.html");
+                },
+                deleteLearningJourney: function(selectedLj) {
+                    a = confirm("Are you sure you want to delete this learning journey?")
+                    if (a == true) {
+                        axios.delete('http://localhost:5000/deleteLearningJourney/' + selectedLj, {
+                            selectedLj: selectedLj
+                        }) 
+                        .then(response=> {
+                            alert("You have successfully delete a learning journey")
+                            return window.location.replace("./myLearningJourney.html");
+                        })
+                        .catch(error => alert(error))
+                    }
+                }
+            },
+
+            mounted: function() {
+                let urlParams = new URLSearchParams(window.location.search);
+                let myParam = urlParams.get('ljourney_id');
+                axios.get('http://localhost:5000/view_LjDetails/' + myParam)
+                    .then(response => {
+                        this.ljDetails = response.data.data
+                    })
+                    .catch(error => alert(error));
+            }
         })
 
 </script>

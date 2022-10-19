@@ -43,7 +43,7 @@
                 <br>
                 Status: {{journey[4]}}
                 <br> 
-                <button @click="viewLearningJourney(journey[0])" :value="journey[0]">View Details</button>
+                <a v-bind:href="'learningJourneyDetails.html?ljourney_id='+journey[0]">View Details</a>
                 <button @click="deleteLearningJourney(journey[0])" :value="journey[0]">Delete</button>
                 <br><br>
             </p>
@@ -59,7 +59,7 @@
         const vm = new Vue({
             el: '#main-container',
             data: {
-                staffId: 140102,
+                staffId: 160212,
                 lj: []
             },
 
