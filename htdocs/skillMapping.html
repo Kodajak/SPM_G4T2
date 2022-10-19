@@ -37,47 +37,49 @@
 </head>
 
 <body>
-    
     <div id="main-container" class="container">
-
         <h1 class="display-4">Mapping of {{skills[0][1]}}</h1>
-
-        <table id="roleTable" class='table table-striped' border='1'>
-            <thead class='thead-dark'>
-                <tr>
-                    <th>Role Name</th>
-                    <th>Role Description</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr v-for="role in roles">
-                    <td><strong>{{ role[1] }}</td>
-                    <td><strong>{{ role[2] }}</td>
-                </tr>
-            </tbody>
-        </table>
-
-        <table id="courseTable" class='table table-striped' border='1'>
-            <thead class='thead-dark'>
-                <tr>
-                    <th>Course Name</th>
-                    <th>Course Description</th>
-                    <th>Course Status</th>
-                    <th>Course Course Type</th>
-                    <th>Course Category</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr v-for="course in courses">
-                    <td><strong>{{ course[1] }}</td>
-                    <td><strong>{{ course[2] }}</td>
-                    <td><strong>{{ course[3] }}</td>
-                    <td><strong>{{ course[4] }}</td>
-                    <td><strong>{{ course[5] }}</td>
-                </tr>
-            </tbody>
-        </table>
-
+        <div id="roles" v-if="roles.length">
+            <table id='roleTable' class='table table-striped' border='1'>
+                <thead class='thead-dark'>
+                    <tr>
+                        <th>Role Name</th>
+                        <th>Role Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="role in roles">
+                        <td><strong>{{ role[1] }}</strong></td>
+                        <td><strong>{{ role[2] }}</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div id="courses" v-if="courses.length">
+            <table id='courseTable' class='table table-striped' border='1'>
+                <thead class='thead-dark'>
+                        <tr>
+                            <th>Course Name</th>
+                            <th>Course Description</th>
+                            <th>Course Status</th>
+                            <th>Course Course Type</th>
+                            <th>Course Category</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for='course in courses'>
+                            <td><strong>{{ course[1] }}</strong></td>
+                            <td><strong>{{ course[2] }}</strong></td>
+                            <td><strong>{{ course[3] }}</strong></td>
+                            <td><strong>{{ course[4] }}</strong></td>
+                            <td><strong>{{ course[5] }}</strong></td>
+                        </tr>
+                    </tbody>
+            </table>
+            <a v-bind:href="'updateSkillMapping.html?skill_id='+skills[0][0]"><button type="submit" class="btn btn-primary mb-2">Update Skill Mapping</button></a>
+        </div>
+        <a v-if="!courses.length" v-bind:href="'updateSkillMapping.html?skill_id='+skills[0][0]"><button type="submit" class="btn btn-primary mb-2">Add Skill Mapping</button></a>
+        
     </div>
     <script>
         const vm = new Vue({
@@ -100,6 +102,8 @@
             }
         });
     </script>
+    <!-- <script src="js/navbar.js"></script> -->
+
 </body>
 
 </html>

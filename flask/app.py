@@ -7,6 +7,9 @@ import pandas as pd
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 import mysql.connector as mysql
+import json
+
+import requests
 
 app = Flask(__name__)
 # enter your server IP address/domain name
@@ -73,7 +76,7 @@ def view_Role():
         {
             "data": dict(role for role in roles)
         }
-    ), 200
+    )
 
 @app.route("/view_ljRoles")
 def view_LJRole ():
@@ -84,7 +87,7 @@ def view_LJRole ():
         {
             "data": ljRoles
         }
-    ), 200
+    )
 
 @app.route("/create_ljRoles", methods=['POST'])
 
@@ -192,7 +195,43 @@ def skill_mapping(skillID):
             "courses": courseUnderSkill
         }
     )
+
+# update skill mapping of roles and courses
+@app.route("/update-skill-mapping/<int:skillID>")
+def update_skill_mapping(skillID):
     
+    view_Role()
+    courses()
+    courseList = requests.get("http://0.0.0.0:5000/view-course-list")
+    courseList.raise_for_status()
+    jsoncourseList = courseList.json()
+    # rename key in dictionary
+    jsoncourseList["courses"] = jsoncourseList.pop("data") 
+    print(jsoncourseList)
+
+    skill = "SELECT * FROM Skill WHERE skill_id="+str(skillID)
+    cursor.execute(skill)
+    skill = cursor.fetchall()
+    print(skill)
+
+    roleList = requests.get("http://0.0.0.0:5000/view_roles")
+    roleList.raise_for_status()
+    jsonroleList = roleList.json()
+    # rename key in dictionary
+    jsonroleList["roles"] = jsonroleList.pop("data") 
+    print(jsonroleList)
+
+    csr = {}
+    
+    csr.update(jsonroleList)
+    csr.update(jsoncourseList)
+    return jsonify(
+        {
+            "skill" : skill,
+            "roles": csr['roles'],
+            "courses": csr['courses']
+        }
+    )
 
 # get skills based on selected ljRole id
 @app.route("/view_skills/<int:ljRole_Id>")
