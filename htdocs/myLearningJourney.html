@@ -36,15 +36,15 @@
         <div>
 
             <p v-for="journey in lj" >
-                Role: {{journey[1]}}
+                Role: {{journey[2]}}
                 <br>
                 Skills: 
-                <span v-for="skill in journey[2]">{{skill}}</span>
+                <span v-for="skill in journey[3]">{{skill}}</span>
                 <br>
-                Status: {{journey[3]}}
+                Status: {{journey[4]}}
                 <br> 
                 <button @click="viewLearningJourney(journey[0])" :value="journey[0]">View Details</button>
-
+                <button @click="deleteLearningJourney(journey[0])" :value="journey[0]">Delete</button>
                 <br><br>
             </p>
 
@@ -73,6 +73,20 @@
                 //     return window.location.replace("./learningJourneyDetails.html")
                 // })
                 .catch(error => alert(error))
+            },
+
+            deleteLearningJourney: function(selectedLj) {
+                a = confirm("Are you sure you want to delete this learning journey?")
+                if (a == true) {
+                    axios.delete('http://localhost:5000/deleteLearningJourney/' + selectedLj, {
+                        selectedLj: selectedLj
+                    }) 
+                    .then(response=> {
+                        alert("You have successfully delete a learning journey")
+                        return window.location.reload()
+                    })
+                    .catch(error => alert(error))
+                }
             }
         },
 

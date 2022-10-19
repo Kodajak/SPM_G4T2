@@ -121,7 +121,7 @@ def get_lj(staffId):
 def view_filteredRoles(staffId):
     existingRoleId = get_lj(staffId)
     # get all active roles where active = 0
-    query = "SELECT * FROM LJRole WHERE status = 0"
+    query = "SELECT * FROM LJRole WHERE status = 1"
     cursor.execute(query)
     ljRoles = cursor.fetchall()
     ljFilteredRoles = []
@@ -291,8 +291,8 @@ def skill_by_course(skillID):
     for id in courseUnderSkill:
         print(id)
         # check if function returns empty list
-        if getCourse(id[0]) != []:
-            courses.append(getCourse(id[0]))
+        if getCourseByID(id[0]) != []:
+            courses.append(getCourseByID(id[0]))
     return jsonify(
         {
             "data": courses,
@@ -456,7 +456,7 @@ def view_skills(ljRole_Id):
         skillsIdQuery += str(item[0]) + ","
     skillsIdQuery = skillsIdQuery[:-1]
     skillsIdQuery += ")"
-    query2 = "SELECT * FROM Skill WHERE status = 0 and skill_id in" + str(skillsIdQuery)
+    query2 = "SELECT * FROM Skill WHERE status = 1 and skill_id in" + str(skillsIdQuery)
     cursor.execute(query2)
     skills = cursor.fetchall()
     return jsonify(
@@ -486,14 +486,6 @@ def create_lj():
   
     # if form validation succesful
     try:
-    # sample_query = "SELECT ljrole_id FROM LearningJourney"
-    # cursor.execute(sample_query)
-    # id = cursor.fetchall()
-    # print(id)
-    # count = len(id) + 1
-    # print(count)
-    # sampleRoleId = 22
-    # completionStatus = 'Incomplete'
         staffId = data['staffId']
         selectedRole = data['selectedRole']
         print(selectedRole)
@@ -539,6 +531,9 @@ def get_all_lj(staffId):
     lj_list = cursor.fetchall()
     lj_descriptive_list = []
     for lj in lj_list:
+        # get ljid
+        ljourney_id = lj[0]
+        
         data = []
         # get role name
         roleid = lj[2]
@@ -572,7 +567,7 @@ def get_all_lj(staffId):
         # get status
         status = lj[3]
 
-        data = [roleid, ljRoleName, skillNames, status]
+        data = [ljourney_id, roleid, ljRoleName, skillNames, status]
         # append as a list to lj_descriptive_list
         lj_descriptive_list.append(data)
     return jsonify(
@@ -604,6 +599,32 @@ def view_selectedLjDetail():
         }
     ), 200
     # return ''
+
+
+@app.route("/deleteLearningJourney/<int:selectedLj>", methods=["DELETE"])
+def deleteLearningJourney(selectedLj):
+    print(selectedLj)
+    if (request.method == 'DELETE'):
+        # delete from ljcourse table
+        query2 = "DELETE FROM LJ_Course WHERE ljourney_id =" + str(selectedLj)
+        cursor.execute(query2)
+        db_connection.commit()
+        print("deleted from ljcourse")
+
+
+        # delete from learningjourney table
+        query = "DELETE FROM LearningJourney WHERE ljourney_id =" + str(selectedLj)
+        cursor.execute(query)
+        db_connection.commit()
+        print("deleted from learningjourney")
+        
+        return jsonify("success", 201)
+
+    else:
+        return jsonify({
+            "message": "Unable to commit to database."
+        }), 500
+
 
     
 if __name__ == '__main__':
