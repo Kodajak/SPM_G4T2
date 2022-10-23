@@ -112,6 +112,7 @@
             el: '#main-container',
             data: {
                 allRoles: [],
+                roleName: [],
                 new_RoleName: "",
                 new_RoleDesc:"",
                 modalRole: '',
@@ -149,7 +150,7 @@
                 },   
                 createLJRoles: function(){
                 event.preventDefault()
-                    if(this.new_RoleName in this.roles){
+                    if(this.roleName.includes(this.new_RoleName)){
                         return alert("Role exists")
                     }else if(this.new_RoleName==""){
                         return alert("Enter role name")
@@ -157,7 +158,7 @@
                     else{
                         axios.post("http://localhost:5000/create_ljRoles", {"data":[this.new_RoleName,this.new_RoleDesc]})
                             .then(response=>{
-                                window.location.replace("./view-roles.html")
+                                window.location.replace("./rolesManagement.html")
                                 console.log(response)
                             })
                             .catch(error=>{this.error = error.response.data.message })
@@ -179,7 +180,12 @@
                 axios.get('http://localhost:5000/view_ljRoles')
                     .then(response => {
                         this.allRoles = response.data.data
-                        // console.log(response.data.data)
+                        // console.log(this.allRoles)
+                        for(let i=0; i<this.allRoles.length; i++){
+                            this.roleName.push(this.allRoles[i][1])
+                            // console.log(this.allRoles[i][1])
+                        }
+                        // console.log(this.roleName)
                     })
                     .catch(error => alert(error));
             }
