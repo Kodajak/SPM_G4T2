@@ -194,7 +194,7 @@
                 },
                 createLJRoles: function(){
                 event.preventDefault()
-                    if(this.roleName.includes(this.new_RoleName)){
+                    if(this.roleName.includes(this.new_RoleName.toLowerCase())){
                         return alert("Role exists")
                     }else if(this.new_RoleName==""){
                         return alert("Enter role name")
@@ -226,8 +226,9 @@
                         this.allRoles = response.data.data
                         // console.log(this.allRoles)
                         for(let i=0; i<this.allRoles.length; i++){
-                            this.roleName.push(this.allRoles[i][1])
-                            // console.log(this.allRoles[i][1])
+                            let temp = this.allRoles[i][1].toLowerCase()
+                            this.roleName.push(temp)
+                            console.log(temp)
                         }
                         // console.log(this.roleName)
                     })

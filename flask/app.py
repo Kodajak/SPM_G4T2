@@ -264,8 +264,8 @@ def create_LJRole():
         role = data['data'][0]
         desc = data['data'][1]
 
-        query2 = "INSERT INTO LJRole (ljrole_name, ljrole_desc) VALUES (%s, %s)"
-        val = (role,desc)
+        query2 = "INSERT INTO LJRole (ljrole_name, ljrole_desc, status) VALUES (%s, %s,%s)"
+        val = (role,desc,1)
         cursor.execute(query2, val)
         db_connection.commit()
     else:
