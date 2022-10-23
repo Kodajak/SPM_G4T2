@@ -100,11 +100,41 @@
                     
                     Description:
                     <input type="text" class = 'w-100' id="role_desc" name="role" v-model="new_RoleDesc"><br><br>
-                    <button type="submit" v-on:click="createLJRoles()">
+                    <button type="submit" data-target="#myModal" v-on:click="confirmation()">
                         Submit
                     </button>
                 </form>
         </div>
+
+        <div class="modal fade" id="myModal" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modal-title">Confirmation</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="form-group">
+                            <label for="recipient-name" class="col-form-label">Role Name:</label>
+                                <p class="w-100" id="modalname"></p>
+                        </div>
+                        <div class="form-group">
+                            <label for="message-text" class="col-form-label">Role Description:</label>
+                            <p id="modaldesc"></p>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">cancel</button>
+                    <button type="button" class="btn btn-primary" @click="createLJRoles()" data-dismiss="modal">create</button>
+                </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <script>
@@ -121,9 +151,7 @@
                 stat_change:""
             },
             methods:{
-                // viewLJRoles(roleID){
-                    
-                // },
+
                 sendInfo(role) {
                     this.modalRole = role;
                     this.roleNametoEdit = role[1]
@@ -148,6 +176,22 @@
                     }
                     
                 },   
+                confirmation: function(){
+                    event.preventDefault()
+                    if(this.new_RoleName=="" | this.new_RoleDesc==""){
+                        return alert("Enter details")
+                    }
+                    else{
+                        $("#myModal").modal("show")
+                        let name = document.getElementById("role_name").value
+                        let desc = document.getElementById("role_desc").value
+
+                        console.log(name)
+                        document.getElementById("modalname").innerText = name
+                        document.getElementById("modaldesc").innerText = desc
+
+                    }
+                },
                 createLJRoles: function(){
                 event.preventDefault()
                     if(this.roleName.includes(this.new_RoleName)){
