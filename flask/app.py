@@ -330,7 +330,7 @@ def skill_mapping(skillID):
     query = f"SELECT * FROM Skill WHERE skill_id = {skillID}" 
     cursor.execute(query)
     skill = cursor.fetchall()
-    
+
     queryC = f"SELECT * " \
     "FROM Course " \
     "WHERE course_id IN (SELECT DISTINCT courseid from (SELECT DISTINCT c.course_id as courseid " \
@@ -368,29 +368,44 @@ def update_skill_mapping(skillID):
     jsoncourseList = courseList.json()
     # rename key in dictionary
     jsoncourseList["courses"] = jsoncourseList.pop("data") 
-    print(jsoncourseList)
 
     skill = "SELECT * FROM Skill WHERE skill_id="+str(skillID)
     cursor.execute(skill)
     skill = cursor.fetchall()
-    print(skill)
 
     roleList = requests.get("http://0.0.0.0:5000/view_ljRoles")
     roleList.raise_for_status()
     jsonroleList = roleList.json()
     # rename key in dictionary
     jsonroleList["roles"] = jsonroleList.pop("data") 
-    print(jsonroleList)
+    
+
+    query = "SELECT c.course_id,c.course_name FROM Course_Skill cs,Course c WHERE c.course_id = cs.course_id AND skill_id =" + str(skillID)
+    cursor.execute(query)
+    currentMappedCourses = cursor.fetchall()
+    print(currentMappedCourses)
+    query = "SELECT lr.ljrole_id, lr.ljrole_name FROM LJRole_Skill lrs, LJRole lr WHERE lrs.ljrole_id = lr.ljrole_id  AND skill_id =" + str(skillID)
+    cursor.execute(query)
+    currentMappedRoles = cursor.fetchall()
+
+    for course in jsoncourseList["courses"]:
+        if course[0] in currentMappedCourses:
+            jsoncourseList["courses"].remove(course)
+
+    #print(jsoncourseList["courses"])
 
     csr = {}
     
     csr.update(jsonroleList)
     csr.update(jsoncourseList)
+
     return jsonify(
         {
             "skill" : skill,
             "roles": csr['roles'],
-            "courses": csr['courses']
+            "courses": csr['courses'],
+            "currentMappedCourses": currentMappedCourses,
+            "currentMappedRoles": currentMappedRoles 
         }
     )
 # create skill mapping
