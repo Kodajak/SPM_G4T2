@@ -108,7 +108,8 @@
                     .then(response => {
                         this.courses = response.data.courses,
                         this.roles = response.data.roles,
-                        this.skills = response.data.skill
+                        this.skills = response.data.skill,
+                        this.selectedCourses = response.data.currentMappedCourses
                     })
                     .catch(error => alert(error));
             }, 
