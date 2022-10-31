@@ -48,7 +48,6 @@
                     <!-- <th>Mapped to Course?</th> -->
                     <th>Status</th>
                     <th></th>
-                    <th></th>
                 </tr>
             </thead>
             <tbody>
@@ -62,8 +61,8 @@
                     <td v-else><button @click="switchStatus(skill)">Inactive</button></td>
                     <td v-if="skillsWithCourses.includes(skill[0]) || skillsWithRoles.includes(skill[0])"><button disabled type="button" data-toggle="modal" data-target="#editModal" @click="sendInfo(skill)">Edit</button></td>
                     <td v-else><button type="button" data-toggle="modal" data-target="#editModal" @click="sendInfo(skill)">Edit</button></td>
-                    <td v-if="skillsWithCourses.includes(skill[0])"><button disabled type="button" data-toggle="modal" data-target="#deleteModal">Delete</button></td>
-                    <td v-else><button type="button" data-toggle="modal" data-target="#deleteModal" @click="sendInfo(skill)">Delete</button></td>
+                    <!-- <td v-if="skillsWithCourses.includes(skill[0])"><button disabled type="button" data-toggle="modal" data-target="#deleteModal">Delete</button></td>
+                    <td v-else><button type="button" data-toggle="modal" data-target="#deleteModal" @click="sendInfo(skill)">Delete</button></td> -->
                 </tr>
             </tbody>
         </table>
@@ -168,6 +167,7 @@
                             .then(response=>{
                                 window.location.reload()
                                 console.log(response)
+                                return alert("Skill Deactivated!")
                             })
                             .catch(error=>{this.error = error.response})
                     }
@@ -176,6 +176,7 @@
                             .then(response=>{
                                 window.location.reload()
                                 console.log(response)
+                                return alert("Skill Activated!")
                             })
                             .catch(error=>{this.error = error.response})
                     }
@@ -191,6 +192,8 @@
                             .then(response=>{
                                 window.location.reload()
                                 console.log(response)
+                                return alert("Skill updated!")
+
                             })
                             .catch(error=>{this.error = error.response})
                     }
@@ -221,6 +224,7 @@
                             .then(response=>{
                                 window.location.reload()
                                 console.log(response)
+                                return alert("Skill created!")
                             })
                             .catch(error=>{this.error = error.response.data.message })
                     }
