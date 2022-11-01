@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learning Journey Details</title>
+
+    <!-- Bootstrap libraries -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"
+        integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+
+    <!-- Latest compiled and minified JavaScript -->
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js"
+        integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut"
+        crossorigin="anonymous"></script>
+
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js"
+        integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+</head>
+<body>
+    <div id="main-container">
+        <div class="row my-2">
+            <button type="button" @click="viewAllLearningJourneys" class="btn btn-outline-secondary ml-4">Back</button><br>
+            <button type="button" style="display: inline-block;" @click="deleteLearningJourney(ljDetails[0])" :value="ljDetails[0]" class="btn btn-danger ml-3" style="display: inline-block; vertical-align: top;">Delete Learning Journey</button>
+        </div>
+        
+        <h1>{{ljDetails[1]}} Learning Journey</h1><br>
+        <h5>Status: {{ljDetails[3]}}</h5><br>
+        <h5 style="display: inline">Skills and Courses:</h5>
+        <a v-if="addCourseButton" v-bind:href="'addLearningJourneyCourse.html?ljourney_id='+ljDetails[0]" style="display: inline" class="btn btn-outline-primary">Add Courses</a>
+        
+
+        <p v-for="skill in ljDetails[2]">
+            <b>{{skill[0][1]}}<span v-if="skill[0][2] == true">✅</span>:</b>
+            <br>
+            <span v-if="skill[1] != ''">
+                <span v-for="course in skill[1]">
+                    {{course[1]}} ({{course[2]}})<br>
+                </span>
+            </span>
+
+            <span v-if="skill[1] == '' && noNewCourseList.includes(skill[0][0])">There are no available courses to be added at the moment</span>
+
+            <span v-if = "skill[1] == '' && !noNewCourseList.includes(skill[0][0])">You have not added a course for this skill</span>
+        </p><br>
+ 
+    </div>
+
+</body>
+<script>
+    const vm = new Vue({
+            el: '#main-container',
+            data: {
+                staffId: 160212,
+                selectedLj: '',
+                ljDetails: '',
+                addCourseButton: false,
+                removeCourseButton: true,
+                availCourses: '',
+                noNewCourseList: []
+
+            },
+
+            methods: {
+                viewAllLearningJourneys: function() {
+                    return window.location.replace("./myLearningJourney.html");
+                },
+
+                viewLearningJourney: function(selectedLj) {
+                console.log(selectedLj)
+                axios.post('http://localhost:5000/view_LjDetails/' + selectedLj, {
+                    selectedLj: selectedLj
+                }) 
+                .catch(error => alert(error))
+                },
+
+                deleteLearningJourney: function(selectedLj) {
+                    a = confirm("Are you sure you want to delete this learning journey?")
+                    if (a == true) {
+                        axios.delete('http://localhost:5000/deleteLearningJourney/' + selectedLj, {
+                            selectedLj: selectedLj
+                        }) 
+                        .then(response=> {
+                            alert("You have successfully delete a learning journey")
+                            return window.location.replace("./myLearningJourney.html");
+                        })
+                        .catch(error => alert(error))
+                    }
+                }
+            },
+
+            mounted: function() {
+                let urlParams = new URLSearchParams(window.location.search);
+                let myParam = urlParams.get('ljourney_id');
+                axios.get('http://localhost:5000/view_LjDetails/' + myParam)
+                    .then(response => {
+                        this.ljDetails = response.data.data
+
+                        axios.get('http://localhost:5000/viewCoursesToAdd/' + myParam)
+                        .then(response => {
+                            this.availCourses = response.data.data
+                            for (skill of this.availCourses[2]) {
+                                if (skill[1] != '') {
+                                    skillId = skill[0][0]
+                                    
+                                    if (skill[1].length == 0) {
+                                        console.log(skill[1])
+                                        this.noNewCourseList.push(skillId)
+                                    }
+
+                                    let completed_count = 0
+
+                                    // if there are courses that are not completed, show add courses button
+
+                                    for (course of skill[1]) {
+                                        if (course[2] != 'Completed') {
+                                            // console.log(course[2])
+                                            this.addCourseButton = true
+                                        } else if (course[2] == 'Completed'){
+                                            completed_count += 1
+                                        }
+                                
+                                    }
+                                    if (completed_count == skill[1].length) {
+                                        this.noNewCourseList.push(skillId)
+                                    }
+
+                                }
+                            }
+                            
+                        })
+                        .catch(error => alert(error));
+
+
+                    })
+                    .catch(error => alert(error));
+            }
+        })
+
+</script>
+</html>
