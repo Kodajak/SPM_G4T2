@@ -30,7 +30,7 @@
         <h1>My Learning Journeys</h1>
 
         <div>
-            <button onclick="createLearningJourney()">Add New</button>
+            <button class="btn btn-primary" onclick="createLearningJourney()">Add New</button>
         </div>
 
         <div>
@@ -43,8 +43,8 @@
                 <br>
                 Status: {{journey[4]}}
                 <br> 
-                <a v-bind:href="'learningJourneyDetails.html?ljourney_id='+journey[0]">View Details</a>
-                <button @click="deleteLearningJourney(journey[0])" :value="journey[0]">Delete</button>
+                <a v-bind:href="'learningJourneyDetails.html?ljourney_id='+journey[0]" class="btn btn-outline-secondary">View Details</a>
+                <button class="btn btn-outline-danger" @click="deleteLearningJourney(journey[0])" :value="journey[0]">Delete</button>
                 <br><br>
             </p>
 
@@ -69,9 +69,6 @@
                 axios.post('http://localhost:5000/view_LjDetails/' + selectedLj, {
                     selectedLj: selectedLj
                 }) 
-                // .then(response=> {
-                //     return window.location.replace("./learningJourneyDetails.html")
-                // })
                 .catch(error => alert(error))
             },
 

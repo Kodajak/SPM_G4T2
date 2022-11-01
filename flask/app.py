@@ -1,3 +1,4 @@
+from re import L
 from sqlite3 import Cursor
 from urllib import response
 from flask import Flask, request, jsonify, render_template, request, redirect, url_for
@@ -287,6 +288,7 @@ def skill_by_course(skillID):
     query = "SELECT skill_desc FROM Skill WHERE skill_id =" + str(skillID)
     cursor.execute(query)
     skill = cursor.fetchall()
+    print(courseUnderSkill)
     courses = []
     for id in courseUnderSkill:
         print(id)
@@ -620,13 +622,14 @@ def view_LjDetails(ljourney_id):
     skills = get_active_skill(skillsId)
     skillList = []
 
-    # creating skillList where format = [[skill 1, (acquired/unacquired)], [chosen course names, (completed/ongoing/registered/waitlist/not registered)]]
+    # creating skillList where format = [[skillId, skill 1, (acquired/unacquired)], [chosen course names, (completed/ongoing/registered/waitlist/not registered)]]
     for skill in skills:
         skillCourseDetails = []
         courseList = []
+        skillId = skill[0]
         
         # get courses under skill
-        query = "SELECT course_id FROM Course_Skill WHERE skill_id=" + str(skill[0])
+        query = "SELECT course_id FROM Course_Skill WHERE skill_id=" + str(skillId)
         cursor.execute(query)
         courses_in_skill = cursor.fetchall()
         skillAcquired = False
@@ -663,7 +666,7 @@ def view_LjDetails(ljourney_id):
                     skillAcquired = True
                 courseList.append([courseId, courseName, courseStatus])
         
-        skillCourseDetails = [[skill[1], skillAcquired], courseList]
+        skillCourseDetails = [[skillId, skill[1], skillAcquired], courseList]
         skillList.append(skillCourseDetails)
     
     status = ljDetails[0][3]
@@ -695,7 +698,102 @@ def deleteLearningJourney(selectedLj):
             "message": "Unable to commit to database."
         }), 500
 
-
+@app.route("/viewCoursesToAdd/<int:ljourney_id>")
+def viewCoursesToAdd(ljourney_id):
+    query = "SELECT * FROM LearningJourney WHERE ljourney_id =" + str(ljourney_id)
+    cursor.execute(query)
+    ljDetails = cursor.fetchall()
     
+    roleId = ljDetails[0][2]
+    roleName= get_role_name(roleId)
+    
+    skillsId = get_skills_id(roleId)
+    skills = get_active_skill(skillsId)
+    skillList = []
+
+    # creating skillList where format = [[skillId, skill 1, (acquired/unacquired)], [chosen course names, (completed/ongoing/registered/waitlist/not registered)]]
+    for skill in skills:
+        skillCourseDetails = []
+        courseList = []
+        skillId = skill[0]
+        
+        # get courses under skill
+        query = "SELECT course_id FROM Course_Skill WHERE skill_id=" + str(skillId)
+        cursor.execute(query)
+        courses_in_skill = cursor.fetchall()
+        skillAcquired = False
+        
+        # check if course not chosen
+        for course in courses_in_skill:
+            if course not in get_lj_courses_id(ljourney_id):
+                courseDetails = (get_course_details(course[0]))
+                
+                if courseDetails != []:
+                    courseId = courseDetails[0][0]
+                    # print("this is " + str(courseDetails[0][1]))
+                    courseName = courseDetails[0][1]
+                    courseDesc = courseDetails[0][2]
+                    # check course status and registration
+                    # get staffid
+                    query = "SELECT staff_id FROM LearningJourney WHERE ljourney_id=" + str(ljourney_id)
+                    cursor.execute(query)
+                    staffId = cursor.fetchall()
+
+                    # get course status and registration
+                    query = "SELECT course_id, reg_status, completion_status FROM Registration WHERE staff_id=" + str(staffId[0][0]) + " AND course_id='" + str(courseId) + "'"
+                    cursor.execute(query)
+                    courseStatusDetails = cursor.fetchall()
+                    
+                    # extract actual status
+                    if courseStatusDetails == []:
+                        courseStatus = "Incomplete"
+                    else:
+                        if courseStatusDetails[0][2] == '':
+                            courseStatus = courseStatusDetails[0][1]
+                        else:
+                            courseStatus = courseStatusDetails[0][2]
+
+                    courseList.append([courseId, courseName, courseStatus, courseDesc])
+        
+        skillCourseDetails = [[skillId, skill[1]], courseList]
+        skillList.append(skillCourseDetails)
+    
+    status = ljDetails[0][3]
+    result = [ljourney_id, roleName, skillList, status]
+    return jsonify(
+        {
+            "data": result
+        }
+    ), 200
+
+@app.route("/addCoursesToLj", methods=["POST"])
+def addCoursesToLj():
+    # check for missing inputs
+    data = request.get_json()
+    print(data)
+    if not all(key in data.keys() for
+               key in ('selectedLj', 'selectedCourses')):
+        return jsonify({
+            "message": "Incorrect JSON object provided."
+        }), 500
+  
+    # if form validation succesful
+    try:
+        selectedLj = data['selectedLj']
+        selectedCourses = data['selectedCourses']
+        for course in selectedCourses:
+            print(selectedLj)
+            print(course)
+            query = "INSERT INTO LJ_Course VALUES (%s, %s)"
+            course_data = (selectedLj, course)
+            cursor.execute(query, course_data)
+            db_connection.commit()
+        return jsonify("success"), 201
+
+    except Exception:
+        return jsonify({
+            "message": "Unable to commit to database."
+        }), 500
+   
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

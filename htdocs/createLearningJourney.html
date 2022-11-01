@@ -4,7 +4,10 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My learning Journey</title>
+    <title>Create learning Journey</title>
+
+    <!-- Bootstrap libraries -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
     <!-- Latest compiled and minified CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"
@@ -32,8 +35,8 @@
         <div id="main-container">   
             <form>
                 <!-- upon clicking a role, the relevant skills will be shown below -->
-                Select a Role:
-                <br>
+                <h5>Select a Role:</h5>
+                
                 <!-- roles in roles[0] = roles that can be selected -->
                 <p v-for="role in roles[0]"> 
                     <input type="radio" v-model="selectedRole" :value="role" @change="onChange()"> {{ role[1] }}
@@ -43,14 +46,13 @@
                 <p v-for="role in roles[1]">
                     <input type="radio" disabled> {{ role[1] }}
                 </p>
-                
-                <p v-if="selectedRole != ''">You have selected  {{selectedRole[1]}} as your desired role.</p>
+            
+                <!-- <p v-if="selectedRole != ''">You have selected  {{selectedRole[1]}} as your desired role.</p> -->
                 <br>
                 
                 <!-- upon selecting a skill, the relevant courses will dropdown -->
                 <div v-if="selectedRole !=''">
-                    Select a Skill:
-                    <br>
+                    <h5>Select a Skill:</h5>
                     <p v-for="(skill_id, index) in skills">
                         <input type="radio" name= "skillOptions" v-model="selectedSkill" :value="skill_id[0]">{{skill_id[1]}}
                     </p>
@@ -58,22 +60,22 @@
                 </div>
 
                 <div v-if="selectedSkill != ''">
-                    Select Courses:
+                    <h5>Select Courses:</h5>
                     <br>
                     <p v-for="course in courses">
                         <input type="checkbox" :id="course[0][0]" :value="course[0]" v-model="selectedCourses">
                         <label :for="course[0][0]">{{course[0][1]}}:</label> <br>{{course[0][2]}}
                     </p>
                     <br>
-                    <p v-if="selectedCourses != ''">
-                        You have selected the following courses:
-                        <p v-for="course of selectedCourses">{{ course[1] }}</p>
-                    </p>
+                    
+                    <h5 v-if="selectedCourses != ''">You have selected the following courses:</h5>
+                    <span v-for="course of selectedCourses">{{ course[1] }}<span v-if="course[1] != selectedCourses[selectedCourses.length -1][1]">, </span></span>
+                    
                     <br><br>
                 </div>
                     
-                <a href="./myLearningJourney.html">Cancel</a>
-                <button @click="submitLearningJourney">Submit</button>
+                <a href="./myLearningJourney.html" class="btn btn-outline-secondary">Cancel</a>
+                <button class="btn btn-primary" @click="submitLearningJourney">Create Learning Journey</button>
             </form>
             
             
