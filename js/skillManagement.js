@@ -48,39 +48,79 @@ const vm = new Vue({
         },
         edit_Skill(){
             event.preventDefault()
+            skillArr = []
+            for (skill of this.allSkills){
+                skillArr.push([skill[0], skill[1].toLowerCase(), skill[2].toLowerCase()])
+            }
+
             this.skillNametoEdit = this.skillNametoEdit.trim()
             this.modalSkill[1] = this.skillNametoEdit
             this.skillDesctoEdit = this.skillDesctoEdit.trim()
             this.modalSkill[2] = this.skillDesctoEdit
-            if (this.modalSkill[1] != "" && this.modalSkill[2] != ""){
-                axios.post("http://localhost:5000/edit_Skill", {"data":[this.modalSkill]})
-                    .then(response=>{
-                        window.location.reload()
-                        console.log(response)
-                        return alert("Skill updated!")
 
-                    })
-                    .catch(error=>{this.error = error.response})
+            // console.log(skillArr)
+            // console.log(this.modalSkill)
+            // console.log([this.modalSkill[1].toLowerCase(), this.modalSkill[2].toLowerCase()])
+            
+            var error = false
+            skillArr.forEach((row, index) => {
+                // console.log(row[0], this.modalSkill[0])
+                if (row[1] == this.modalSkill[1].toLowerCase() && row[2] == this.modalSkill[2].toLowerCase()) {
+                    // console.log('true', row)
+                    window.location.reload()
+                    return alert("No changes made!")
+                }
+                else if (row[0] != this.modalSkill[0] && row[1] == this.modalSkill[1].toLowerCase()) {
+                    window.location.reload()
+                    error = true
+                    return alert("Skill Name exists!")
+                }
+                else if (row[0] != this.modalSkill[0] && row[2] == this.modalSkill[2].toLowerCase()) {
+                    window.location.reload()
+                    error = true
+                    return alert("Skill description exists!")
+                }
+            })
+            if (this.modalSkill[1] != "" && this.modalSkill[2] != "" && error == false){
+                        axios.post("http://localhost:5000/edit_Skill", {"data":[this.modalSkill]})
+                            .then(response=>{
+                                window.location.reload()
+                                // console.log(response)
+                                return alert("Skill updated!")
+                            })
+                            .catch(error=>{this.error = error.response})
+                }
+            else if (error == true) {
+                return ""
             }
-            else{
+            else {
+                window.location.reload()    
                 return alert("Input field is empty!")
             }
-            
         },                
         create_Skill(){
-        event.preventDefault()
-        console.log(this.new_SkillName)
-        this.new_SkillName = this.new_SkillName.trim()
-        this.new_SkillDesc = this.new_SkillDesc.trim()
-        skillArr = []
-            for (skill of this.allSkills){
-                skillArr.push(skill[1].toLowerCase())
-            }
+            event.preventDefault()
+            console.log(this.new_SkillName)
+            this.new_SkillName = this.new_SkillName.trim()
+            this.new_SkillDesc = this.new_SkillDesc.trim()
+            skillArr = []
+                for (skill of this.allSkills){
+                    skillArr.push(skill[1].toLowerCase())
+                }
+            skillDescArr = []
+                for (skill of this.allSkills){
+                    skillArr.push(skill[2].toLowerCase())
+                }
             console.log(skillArr)
-            if(skillArr.includes(this.new_SkillName.toLowerCase())){
+            if (skillArr.includes(this.new_SkillName.toLowerCase())) {
                 this.new_SkillName = ""
                 this.new_SkillDesc = ""
                 return alert("Skill exists")
+            }
+            else if(skillArr.includes(this.new_SkillDesc.toLowerCase())){
+                this.new_SkillName = ""
+                this.new_SkillDesc = ""
+                return alert("Skill description exists")
             }else if(this.new_SkillName=="" || this.new_SkillDesc==""){
                 return alert("Skill Name/Description is blank!")
             }
