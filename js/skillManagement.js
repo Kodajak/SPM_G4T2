@@ -63,7 +63,7 @@ const vm = new Vue({
             // console.log([this.modalSkill[1].toLowerCase(), this.modalSkill[2].toLowerCase()])
             
             var error = false
-            skillArr.forEach((row, index) => {
+            skillArr.forEach((row) => {
                 // console.log(row[0], this.modalSkill[0])
                 if (row[1] == this.modalSkill[1].toLowerCase() && row[2] == this.modalSkill[2].toLowerCase()) {
                     // console.log('true', row)
@@ -82,14 +82,14 @@ const vm = new Vue({
                 }
             })
             if (this.modalSkill[1] != "" && this.modalSkill[2] != "" && error == false){
-                        axios.post("http://localhost:5000/edit_Skill", {"data":[this.modalSkill]})
-                            .then(response=>{
-                                window.location.reload()
-                                // console.log(response)
-                                return alert("Skill updated!")
-                            })
-                            .catch(error=>{this.error = error.response})
-                }
+                axios.post("http://localhost:5000/edit_Skill", {"data":this.modalSkill})
+                    .then(response=>{
+                        window.location.reload()
+                        // console.log(response)
+                        return alert("Skill updated!")
+                    })
+                    .catch(error=>{this.error = error.response})
+            }
             else if (error == true) {
                 return ""
             }

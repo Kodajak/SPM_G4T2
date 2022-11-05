@@ -61,8 +61,8 @@
                     <td v-else><button @click="switchStatus(skill)">Inactive</button></td>
                     <td v-if="skillsWithCourses.includes(skill[0]) || skillsWithRoles.includes(skill[0])"><button disabled type="button" data-toggle="modal" data-target="#editModal" @click="sendInfo(skill)">Edit</button></td>
                     <td v-else><button type="button" data-toggle="modal" data-target="#editModal" @click="sendInfo(skill)">Edit</button></td>
-                    <td v-if="skillsWithCourses.includes(skill[0])"><button disabled type="button" data-toggle="modal" data-target="#deleteModal">Delete</button></td>
-                    <td v-else><button type="button" data-toggle="modal" data-target="#deleteModal" @click="sendInfo(skill)">Delete</button></td>
+                    <!-- <td v-if="skillsWithCourses.includes(skill[0])"><button disabled type="button" data-toggle="modal" data-target="#deleteModal">Delete</button></td>
+                    <td v-else><button type="button" data-toggle="modal" data-target="#deleteModal" @click="sendInfo(skill)">Delete</button></td> -->
                 </tr>
             </tbody>
         </table>

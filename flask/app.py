@@ -1,11 +1,6 @@
-from re import L
-from sqlite3 import Cursor
-from urllib import response
-from flask import Flask, request, jsonify, render_template, request, redirect, url_for
+from flask import Flask, request, jsonify, request, redirect
 import os
-from os.path import join, dirname, realpath
 import pandas as pd
-from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 import mysql.connector as mysql
 import json
@@ -54,6 +49,7 @@ def parseCSV(filePath):
         cursor.execute(sql, value)
         db_connection.commit()
         print(value)
+    
 
 @app.route("/import_csv", methods=['POST'])
 def uploadFiles():
@@ -140,6 +136,9 @@ def view_filteredRoles(staffId):
         }
     ), 200
 
+# --------- Skills Management Functions ---------
+# -------------------- Start --------------------
+
 @app.route("/view_Skills")
 def view_allSkills ():
     query = "SELECT * FROM Skill"
@@ -200,7 +199,7 @@ def delete_Skill(id):
         db_connection.commit()
     else:
         response_object['msg']="error"
-    return 'skill' + id + ' deleted'
+    return 'skill ' + id + ' deleted'
 
 @app.route("/switchStatus/<int:id>", methods=['POST'])
 def switchStatus(id):
@@ -218,7 +217,7 @@ def switchStatus(id):
         db_connection.commit()
     else:
         response_object['msg']="error"
-    return 'skill' + id + ' switched to ' + str(data['data'][0])
+    return 'skill ' + id + ' switched to ' + str(data['data'][0])
 
 @app.route("/edit_Skill", methods=['GET', 'POST'])
 def edit_Skill():
@@ -226,9 +225,9 @@ def edit_Skill():
     data = {}
     if (request.method=='POST'):
         data = request.get_json()
-        skill_name = data['data'][0][1]
-        skill_desc = data['data'][0][2]
-        skill_id = str(data['data'][0][0])
+        skill_name = data['data'][1]
+        skill_desc = data['data'][2]
+        skill_id = str(data['data'][0])
 
         query = "UPDATE Skill SET skill_name=%s, skill_desc=%s WHERE skill_id=%s"
         val = (skill_name, skill_desc, skill_id)
@@ -237,6 +236,12 @@ def edit_Skill():
     else:
         response_object['msg']="error"
     return 'skill ' + str(skill_id) + ' edited'
+
+# -------- Skills Management Functions --------
+# -------------------- End --------------------
+
+# --------- Roles Management Functions ---------
+# -------------------- Start --------------------
 
 @app.route("/edit_Role", methods=['GET', 'POST'])
 def edit_Role():
