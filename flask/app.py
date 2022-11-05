@@ -4,7 +4,6 @@ import pandas as pd
 from flask_cors import CORS
 import mysql.connector as mysql
 import json
-
 import requests
 
 app = Flask(__name__, template_folder='../htdocs')
@@ -75,70 +74,10 @@ def view_Role():
         }
     )
 
-@app.route("/view_ljRoles")
-def view_LJRole ():
-    query = "SELECT * FROM LJRole"
-    cursor.execute(query)
-    ljRoles = cursor.fetchall()
-    return jsonify(
-        {
-            "data": ljRoles
-        }
-    ), 200
-# update status to active/inactive
-@app.route("/softDelete_ljrole", methods=['POST'])
-def softDelete_role():
-    response_object = {'status': 'success'}
-    if (request.method=='POST'):
-        data = request.get_json()
-        id = str(data['data'][0][0])
-        stat = data['data'][0][3]
-        if(stat==1):
-            stat=0
-        else:
-            stat=1
-        query = "UPDATE LJRole SET status="+str(stat)+" WHERE ljrole_id= " + id
-        cursor.execute(query)
-        db_connection.commit()
-    else:
-        response_object['msg']="error"
-    return 'ljrole' + id + ' status changed'
-
-# get staff learning journey
-def get_lj(staffId):
-    query = "SELECT ljrole_id FROM LearningJourney WHERE staff_id=" + str(staffId)
-    cursor.execute(query)
-    data = cursor.fetchall()
-    existingRoleIdList = []
-    for i in data:
-        existingRoleIdList.append(i[0])
-    return existingRoleIdList
-
-@app.route("/view_filteredLjRoles/<int:staffId>")
-def view_filteredRoles(staffId):
-    existingRoleId = get_lj(staffId)
-    # get all active roles where active = 0
-    query = "SELECT * FROM LJRole WHERE status = 1"
-    cursor.execute(query)
-    ljRoles = cursor.fetchall()
-    ljFilteredRoles = []
-    existingRoles = []
-    
-    for role in ljRoles:
-        # get roles that are not in existing learning journeys
-        if role[0] not in existingRoleId:
-            ljFilteredRoles.append(role)
-        else:
-            existingRoles.append(role)
-    return jsonify(
-        {
-            "data": [ljFilteredRoles, existingRoles]
-        }
-    ), 200
-
 # --------- Skills Management Functions ---------
 # -------------------- Start --------------------
 
+# [START] Function to GET ALL skills
 @app.route("/view_Skills")
 def view_allSkills ():
     query = "SELECT * FROM Skill"
@@ -149,7 +88,9 @@ def view_allSkills ():
             "data": allSkills
         }
     ), 200
+# [START] Function to GET ALL skills details
 
+# [START] Function to GET ALL Course ID linked to Skill ID
 @app.route("/get_CourseSkill")
 def get_CourseSkill():
     query = "SELECT * FROM Course_Skill"
@@ -160,7 +101,9 @@ def get_CourseSkill():
             "data": courseSkill
         }
     ), 200
+# [END] Function to GET ALL Course ID linked to Skill ID
 
+# [START] Function to GET ALL learning journey role ID linked to Skill ID
 @app.route("/get_RoleSkill")
 def get_RoleSkill():
     query = "SELECT * FROM LJRole_Skill"
@@ -171,7 +114,9 @@ def get_RoleSkill():
             "data": roleSkill
         }
     ), 200
+# [END] Function to GET ALL learning journey role ID linked to Skill ID
 
+# [START] Function to CREATE a skill
 @app.route("/create_Skill", methods=['POST'])
 def create_Skills():
     response_object = {'status': 'success'}
@@ -188,7 +133,9 @@ def create_Skills():
     else:
         response_object['msg']="error"
     return skillName + ' saved'
+# [END] Function to CREATE a skill
 
+# [START] Function to DELETE a skill based on sepcified skill ID
 @app.route("/delete_Skill/<int:id>", methods=['DELETE'])
 def delete_Skill(id):
     response_object = {'status': 'success'}
@@ -200,7 +147,9 @@ def delete_Skill(id):
     else:
         response_object['msg']="error"
     return 'skill ' + id + ' deleted'
+# [END] Function to DELETE a skill based on sepcified skill ID
 
+# [START] Function to SOFT DELETE a skill based on sepcified skill ID
 @app.route("/switchStatus/<int:id>", methods=['POST'])
 def switchStatus(id):
     response_object = {'status': 'success'}
@@ -218,7 +167,9 @@ def switchStatus(id):
     else:
         response_object['msg']="error"
     return 'skill ' + id + ' switched to ' + str(data['data'][0])
+# [END] Function to SOFT DELETE a skill based on sepcified skill ID
 
+# [START] Function to EDIT a skill based on sepcified skill ID
 @app.route("/edit_Skill", methods=['GET', 'POST'])
 def edit_Skill():
     response_object = {'status': 'success'}
@@ -236,13 +187,49 @@ def edit_Skill():
     else:
         response_object['msg']="error"
     return 'skill ' + str(skill_id) + ' edited'
+# [END] Function to EDIT a skill based on sepcified skill ID
 
 # -------- Skills Management Functions --------
 # -------------------- End --------------------
 
+
 # --------- Roles Management Functions ---------
 # -------------------- Start --------------------
 
+# [START] Function to GET ALL learning journey roles
+@app.route("/view_ljRoles")
+def view_LJRole ():
+    query = "SELECT * FROM LJRole"
+    cursor.execute(query)
+    ljRoles = cursor.fetchall()
+    return jsonify(
+        {
+            "data": ljRoles
+        }
+    ), 200
+# [END] Function to GET ALL learning journey roles
+
+# [START] Function to SOFT DELETE a learning journey role based on a specified learning journey role ID
+@app.route("/softDelete_ljrole", methods=['POST'])
+def softDelete_role():
+    response_object = {'status': 'success'}
+    if (request.method=='POST'):
+        data = request.get_json()
+        id = str(data['data'][0][0])
+        stat = data['data'][0][3]
+        if(stat==1):
+            stat=0
+        else:
+            stat=1
+        query = "UPDATE LJRole SET status="+str(stat)+" WHERE ljrole_id= " + id
+        cursor.execute(query)
+        db_connection.commit()
+    else:
+        response_object['msg']="error"
+    return 'ljrole' + id + ' status changed'
+# [END] Function to SOFT DELETE a learning journey role based on a specified learning journey role ID
+
+# [START] Function to EDIT a learning journey role based on a specified learning journey role ID
 @app.route("/edit_Role", methods=['GET', 'POST'])
 def edit_Role():
     response_object = {'status': 'success'}
@@ -260,7 +247,9 @@ def edit_Role():
     else:
         response_object['msg']="error"
     return 'role ' + str(role_id) + ' edited'
+# [END] Function to EDIT a learning journey role based on a specified learning journey role ID
 
+# [START] Function to CREATE a learning journey role based on a specified learning journey role ID
 @app.route("/create_ljRoles", methods=['POST'])
 def create_LJRole():
     response_object = {'status': 'success'}
@@ -277,26 +266,36 @@ def create_LJRole():
     else:
         response_object['msg']="error"
     return role
+# [END] Function to CREATE a learning journey role based on a specified learning journey role ID
 
-# to pull out the course id that is under skills
+# --------- Roles Management Functions ---------
+# -------------------- End ---------------------
+
+
+# [START] Function to GET active courses based on specified course ID
 def getCourseByID(course_id):
     query = "SELECT DISTINCT * FROM Course WHERE course_status='Active'" + "AND course_id ='" + str(course_id)+"'"
     cursor.execute(query)
     return cursor.fetchall()
-    
-# display course under skills on html
+# [END] Function to GET active courses based on specified course ID
+
+# [START] Function to GET courses ID bsed on a specific skill ID
+def get_course_by_skillId(skillId):
+        query = "SELECT course_id FROM Course_Skill WHERE skill_id=" + str(skillId)
+        cursor.execute(query)
+        return cursor.fetchall()    
+# [END] Function to GET courses ID based on a specific skill ID
+
+# [START] Function to GET skill description and courses based on a specified skill ID
 @app.route("/view-course-skills/<int:skillID>")
 def skill_by_course(skillID):
-    query = "SELECT course_id FROM Course_Skill WHERE skill_id =" + str(skillID)
-    cursor.execute(query)
-    courseUnderSkill = cursor.fetchall()
+    courseUnderSkill = get_course_by_skillId(skillID)
     query = "SELECT skill_desc FROM Skill WHERE skill_id =" + str(skillID)
     cursor.execute(query)
     skill = cursor.fetchall()
     print(courseUnderSkill)
     courses = []
     for id in courseUnderSkill:
-        print(id)
         # check if function returns empty list
         if getCourseByID(id[0]) != []:
             courses.append(getCourseByID(id[0]))
@@ -306,6 +305,8 @@ def skill_by_course(skillID):
             "skill":skill
         }
     )
+# [END] Function to GET courses based on a specified skill ID
+
 
 # display list of courses
 @app.route("/view-course-list")
@@ -330,6 +331,26 @@ def skills():
             "data": skills
         }
     )
+# 
+@app.route("/view_skills/<int:ljRole_Id>")
+def view_skills(ljRole_Id):
+    # get relevant skills ID matched with roleId
+    skillsId = get_skills_id(ljRole_Id)
+    
+    skillsIdQuery = "("
+    for item in skillsId:
+        skillsIdQuery += str(item[0]) + ","
+    skillsIdQuery = skillsIdQuery[:-1]
+    skillsIdQuery += ")"
+    # get skills that match skills id retrieved earlier and are active 
+    query = "SELECT * FROM Skill WHERE skill_id in" + str(skillsIdQuery)
+    cursor.execute(query)
+    skills = cursor.fetchall()
+    return jsonify(
+        {
+            "data": skills
+        }
+    ), 200
 
 # display skill mapping of roles and courses
 @app.route("/view-skill-mapping/<int:skillID>")
@@ -451,9 +472,7 @@ def submit_mapping(skillID):
             course_skill_data = (course, skillID)
             cursor.execute(query2, course_skill_data)
             db_connection.commit()
-            print("pass")
-        print("completed")
-
+            
         checking = "SELECT * FROM Course_Skill"
         cursor.execute(checking)
         print(cursor.fetchall())
@@ -464,26 +483,65 @@ def submit_mapping(skillID):
             "message": "Unable to commit to database."
         }), 500
 
-# get relevant skills ID matched with roleId
+# --------- Staff Learning Journey Creation Functions ---------
+# --------------------------- Start ---------------------------
+
+# [START] Function to get staff learning journey
+def get_all_staff_lj(staffId):
+    query = "SELECT * FROM LearningJourney WHERE staff_id=" + str(staffId)
+    cursor.execute(query)
+    return cursor.fetchall()
+# [END] Function to get staff learning journey
+
+# [START] Function to GET nested list of Unselected and Selected active roles
+@app.route("/view_filteredLjRoles/<int:staffId>")
+def view_filteredRoles(staffId):
+    data = get_all_staff_lj(staffId)
+    existingRoleId = []
+    for i in data:
+        existingRoleId.append(i[2])
+    # get all active roles where active = 0
+    query = "SELECT * FROM LJRole WHERE status = 1"
+    cursor.execute(query)
+    ljRoles = cursor.fetchall()
+    ljFilteredRoles = []
+    existingRoles = []
+    
+    for role in ljRoles:
+        # get roles that are not in existing learning journeys
+        if role[0] not in existingRoleId:
+            ljFilteredRoles.append(role)
+        else:
+            existingRoles.append(role)
+    return jsonify(
+        {
+            "data": [ljFilteredRoles, existingRoles]
+        }
+    ), 200
+# [END] Function to GET nested list of Unselected and Selected active roles
+
+# [START] Function to GET relevant skills ID for a specific role ID
 def get_skills_id(ljRole_Id):
     query1="SELECT skill_id FROM LJRole_Skill WHERE ljrole_id = " + str(ljRole_Id)
     cursor.execute(query1)
     return cursor.fetchall()
+# [END] Function to GET relevant skills ID for a specific role ID
 
-# get skills that match skills id and are active
+# [START] Function to GET active skill details for a specified list of skills ID
 def get_active_skill(skillsId):
     skillsIdQuery = "("
     for item in skillsId:
         skillsIdQuery += str(item[0]) + ","
     skillsIdQuery = skillsIdQuery[:-1]
     skillsIdQuery += ")"
-    query2 = "SELECT * FROM Skill WHERE status = 1 and skill_id in" + str(skillsIdQuery)
-    cursor.execute(query2)
+    query = "SELECT * FROM Skill WHERE status = 1 and skill_id in" + str(skillsIdQuery)
+    cursor.execute(query)
     return cursor.fetchall()
+# [END] Function to GET active skill details for a specified list of skills ID
 
-# get skills based on selected ljRole id
-@app.route("/view_skills/<int:ljRole_Id>")
-def view_skills(ljRole_Id):
+# [START] Function to GET and Return active skill details for a specified list of skills ID in jsonify
+@app.route("/view_active_skills/<int:ljRole_Id>")
+def view_active_skills(ljRole_Id):
     # get relevant skills ID matched with roleId
     skillsId = get_skills_id(ljRole_Id)
     
@@ -494,20 +552,22 @@ def view_skills(ljRole_Id):
             "data": skills
         }
     ), 200
+# [END] Function to GET and Return active skill details for a specified list of skills ID in jsonify
 
-# get new learning journey ID
+# [START] Function to GET newly created learning journey ID
 def getLjId():
     query = "SELECT MAX(ljourney_id) FROM LearningJourney"
     cursor.execute(query)
     data = cursor.fetchall()
     id = data[0][0]
     return id
+# [END] Function to GET newly created learning journey ID
 
+# [START] Function to CREATE new learning journey 
 @app.route("/create_lj", methods=["POST"])
 def create_lj():
     # check for missing inputs
     data = request.get_json()
-    print(data)
     if not all(key in data.keys() for
                key in ('staffId', 'selectedRole', 'selectedCourses')):
         return jsonify({
@@ -518,55 +578,50 @@ def create_lj():
     try:
         staffId = data['staffId']
         selectedRole = data['selectedRole']
-        print(selectedRole)
-        print(type(selectedRole))
         query = "INSERT INTO LearningJourney (staff_id, ljrole_id, completion_status) VALUES (%s, %s, %s);"
 
         lj_data = (staffId, selectedRole[0], 'Incomplete')
         cursor.execute(query, lj_data)
         db_connection.commit()
-        print("pass 1")
-
-        sample_query = "SELECT * FROM LearningJourney"
-        cursor.execute(sample_query)
-        print(cursor.fetchall())
 
         # get new learning journey Id
         newLjId = getLjId()
 
-        print(newLjId)
         selectedCourses = data['selectedCourses']
         for course in selectedCourses:
-            print(course[0])
             query2 = "INSERT INTO LJ_Course VALUES (%s, %s)"
             course_data = (newLjId, course[0])
             cursor.execute(query2, course_data)
             db_connection.commit()
-        print("completed")
 
-        sample_query2 = "SELECT * FROM LJ_Course"
-        cursor.execute(sample_query2)
-        print(cursor.fetchall())
         return jsonify("success"), 201
 
     except Exception:
         return jsonify({
             "message": "Unable to commit to database."
         }), 500
+# [END] Function to CREATE new learning journey 
 
-# get role name from role id
+# --------- Staff Learning Journey Creation Functions ---------
+# --------------------------- End -----------------------------
+
+
+# ---------- Staff View ALL Learning Journey Functions ----------
+# --------------------------- Start ---------------------------
+
+# [START] Function to get role name for a specific role ID
 def get_role_name(roleId):
     query = "SELECT ljrole_name FROM LJRole WHERE ljrole_id =" + str(roleId)
     cursor.execute(query)
     ljRoleName = cursor.fetchall()
     ljRoleName = ljRoleName[0][0]
     return ljRoleName
+# [END] Function to get role name for a specific role ID
 
+# [START] Function to view ALL learning journey for a specific staff
 @app.route("/view_AllLj/<int:staffId>")
 def get_all_lj(staffId):
-    query = "SELECT * FROM LearningJourney WHERE staff_id =" + str(staffId)
-    cursor.execute(query)
-    lj_list = cursor.fetchall()
+    lj_list = get_all_staff_lj(staffId)
     lj_descriptive_list = []
     for lj in lj_list:
         # get ljid
@@ -600,25 +655,42 @@ def get_all_lj(staffId):
             "data": lj_descriptive_list
         }
     ), 200
+# [END] Function to view ALL learning journey for a specific staff
+# ---------- Staff View ALL Learning Journey Functions ---------
+# --------------------------- End ---------------------------
 
-# get courses id in learning journey
+
+
+# ------- Staff View Learning Journey Details Functions --------
+# --------------------------- Start ---------------------------
+
+# [START] Function to get learning journey courses ID in a specific learning journey
 def get_lj_courses_id(ljourney_id):
     query = "SELECT course_id FROM LJ_Course WHERE ljourney_id = " + str(ljourney_id)
     cursor.execute(query)
     ljCourseIdList= cursor.fetchall()
     return ljCourseIdList
+# [END] Function to get learning journey courses ID in a specific learning journey
 
-# get course details based on course id
+# [START] Function to course details based on a specific course ID
 def get_course_details(courseId):
     query = "SELECT * from Course WHERE course_status='Active' AND course_id='" + str(courseId) + "'"
     cursor.execute(query)
     return cursor.fetchall()
+# [END] Function to course details based on a specific course ID
 
+# [START] Function to get course registration details for a specific staff ID
+def get_course_registration_by_staffId(staffId, courseId):
+    query = "SELECT course_id, reg_status, completion_status FROM Registration WHERE staff_id=" + str(staffId[0][0]) + " AND course_id='" + str(courseId) + "'"
+    cursor.execute(query)
+    return cursor.fetchall()
+# [END] Function to get course registration details for a specific staff ID
+
+
+# [START] Function to GET all details (ljourneyId, roleName, skillId, skillName, courseId, courseName, courseDetails) of a specific learning journey ID
 @app.route("/view_LjDetails/<int:ljourney_id>")
 def view_LjDetails(ljourney_id):
-    query = "SELECT * FROM LearningJourney WHERE ljourney_id =" + str(ljourney_id)
-    cursor.execute(query)
-    ljDetails = cursor.fetchall()
+    ljDetails = get_lj_details(ljourney_id)
     
     roleId = ljDetails[0][2]
     roleName= get_role_name(roleId)
@@ -633,10 +705,8 @@ def view_LjDetails(ljourney_id):
         courseList = []
         skillId = skill[0]
         
-        # get courses under skill
-        query = "SELECT course_id FROM Course_Skill WHERE skill_id=" + str(skillId)
-        cursor.execute(query)
-        courses_in_skill = cursor.fetchall()
+        # get courses under skill ID
+        courses_in_skill = get_course_by_skillId(skillId)
         skillAcquired = False
         
         # check if course chosen
@@ -648,14 +718,11 @@ def view_LjDetails(ljourney_id):
                 
                 # check course status and registration
                 # get staffid
-                query = "SELECT staff_id FROM LearningJourney WHERE ljourney_id=" + str(ljourney_id)
-                cursor.execute(query)
-                staffId = cursor.fetchall()
+                staffId = get_lj_details(ljourney_id)
+                staffId = str(staffId[0][1])
 
                 # get course status and registration
-                query = "SELECT course_id, reg_status, completion_status FROM Registration WHERE staff_id=" + str(staffId[0][0]) + " AND course_id='" + str(courseId) + "'"
-                cursor.execute(query)
-                courseStatusDetails = cursor.fetchall()
+                courseStatusDetails = get_course_registration_by_staffId(staffId, courseId)
                 
                 # extract actual status
                 if courseStatusDetails == []:
@@ -681,10 +748,11 @@ def view_LjDetails(ljourney_id):
             "data": result
         }
     ), 200
+# [END] Function to GET all details (ljourneyId, roleName, skillId, skillName, courseId, courseName, courseDetails) of a specific learning journey ID
 
+# [START] Function to DELETE a learning journey based on learning journey ID
 @app.route("/deleteLearningJourney/<int:selectedLj>", methods=["DELETE"])
 def deleteLearningJourney(selectedLj):
-    print(selectedLj)
     if (request.method == 'DELETE'):
         # delete from ljcourse table
         query2 = "DELETE FROM LJ_Course WHERE ljourney_id =" + str(selectedLj)
@@ -702,12 +770,25 @@ def deleteLearningJourney(selectedLj):
         return jsonify({
             "message": "Unable to commit to database."
         }), 500
+# [END] Function to DELETE a learning journey based on learning journey ID
 
-@app.route("/viewCoursesToAdd/<int:ljourney_id>")
-def viewCoursesToAdd(ljourney_id):
+# ------- Staff View Learning Journey Details Functions --------
+# ---------------------------- End -----------------------------
+
+
+# -------- Staff Add Learning Journey Courses Functions ---------
+# ---------------------------- End -----------------------------
+# [START] Function to GET learning journey based on a specific learning journey ID
+def get_lj_details(ljourney_id):
     query = "SELECT * FROM LearningJourney WHERE ljourney_id =" + str(ljourney_id)
     cursor.execute(query)
-    ljDetails = cursor.fetchall()
+    return cursor.fetchall()
+# [END] Function to GET learning journey based on a specific learning journey ID
+
+# [START] Function to GET relevant courses that has not been added to a selected learning journey 
+@app.route("/viewCoursesToAdd/<int:ljourney_id>")
+def viewCoursesToAdd(ljourney_id):
+    ljDetails = get_lj_details(ljourney_id)
     
     roleId = ljDetails[0][2]
     roleName= get_role_name(roleId)
@@ -723,9 +804,7 @@ def viewCoursesToAdd(ljourney_id):
         skillId = skill[0]
         
         # get courses under skill
-        query = "SELECT course_id FROM Course_Skill WHERE skill_id=" + str(skillId)
-        cursor.execute(query)
-        courses_in_skill = cursor.fetchall()
+        courses_in_skill = get_course_by_skillId(skillId)
         skillAcquired = False
         
         # check if course not chosen
@@ -735,19 +814,16 @@ def viewCoursesToAdd(ljourney_id):
                 
                 if courseDetails != []:
                     courseId = courseDetails[0][0]
-                    # print("this is " + str(courseDetails[0][1]))
                     courseName = courseDetails[0][1]
                     courseDesc = courseDetails[0][2]
+                    
                     # check course status and registration
-                    # get staffid
-                    query = "SELECT staff_id FROM LearningJourney WHERE ljourney_id=" + str(ljourney_id)
-                    cursor.execute(query)
-                    staffId = cursor.fetchall()
+                    # get staffid        
+                    staffId = get_lj_details(ljourney_id)
+                    staffId = str(staffId[0][1])
 
                     # get course status and registration
-                    query = "SELECT course_id, reg_status, completion_status FROM Registration WHERE staff_id=" + str(staffId[0][0]) + " AND course_id='" + str(courseId) + "'"
-                    cursor.execute(query)
-                    courseStatusDetails = cursor.fetchall()
+                    courseStatusDetails = get_course_registration_by_staffId(staffId, courseId)
                     
                     # extract actual status
                     if courseStatusDetails == []:
@@ -770,12 +846,14 @@ def viewCoursesToAdd(ljourney_id):
             "data": result
         }
     ), 200
+# [END] Function to Get relevant courses that has not been added to a selected learning journey 
 
+
+# [START] Function to add courses from specific learning journey
 @app.route("/addCoursesToLj", methods=["POST"])
 def addCoursesToLj():
     # check for missing inputs
     data = request.get_json()
-    print(data)
     if not all(key in data.keys() for
                key in ('selectedLj', 'selectedCourses')):
         return jsonify({
@@ -787,8 +865,6 @@ def addCoursesToLj():
         selectedLj = data['selectedLj']
         selectedCourses = data['selectedCourses']
         for course in selectedCourses:
-            print(selectedLj)
-            print(course)
             query = "INSERT INTO LJ_Course VALUES (%s, %s)"
             course_data = (selectedLj, course)
             cursor.execute(query, course_data)
@@ -799,6 +875,47 @@ def addCoursesToLj():
         return jsonify({
             "message": "Unable to commit to database."
         }), 500
+# [END] Function to add courses from specific learning journey
+
+# -------- Staff Add Learning Journey Courses Functions ---------
+# ---------------------------- End -----------------------------
+
+
+# ------ Staff Remove Learning Journey Courses Functions -------
+# --------------------------- Start -----------------------------
+
+# [START] Function to remove courses from specific learning journey
+@app.route("/removeCoursesFromLj", methods=["POST"])
+def removeCoursesFromLj():
+    # check for missing inputs
+    data = request.get_json()
+    
+    if not all(key in data.keys() for
+               key in ('selectedLj', 'selectedCourses')):
+        return jsonify({
+            "message": "Incorrect JSON object provided."
+        }), 500
+  
+    # if form validation succesful
+    try:
+        selectedLj = data['selectedLj']
+        selectedCourses = data['selectedCourses']
+        for course in selectedCourses:
+            query = "DELETE FROM LJ_Course WHERE ljourney_id = (%s) AND course_id= (%s)"
+            course_data = (selectedLj, course)
+            cursor.execute(query, course_data)
+            db_connection.commit()
+        return jsonify("success"), 201
+
+    except Exception:
+        return jsonify({
+            "message": "Unable to commit to database."
+        }), 500
+# [END] Function to remove courses from specific learning journey
+
+# ------ Staff Remove Learning Journey Courses Functions -------
+# ---------------------------- End ------------------------------
+
    
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
