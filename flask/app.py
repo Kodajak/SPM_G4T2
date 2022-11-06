@@ -35,34 +35,7 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 @app.route('/')
 def home():
     return ""
-
-def parseCSV(filePath):
-   # CVS Column Names
-    col_names = ['Course_ID', 'Course_Name', 'Course_Desc', 'Course_Status', 'Course_Type', 'Course_Category']
-    # Use Pandas to parse the CSV file
-    csvData = pd.read_csv(filePath, names = col_names, header = None, encoding= 'unicode_escape', skiprows=1)
-    # Loop through the Rows
-    for i, row in csvData.iterrows():
-        sql = "INSERT INTO Course_Test (Course_ID, Course_Name, Course_Desc, Course_Status, Course_Type, Course_Category) VALUES (%s, %s, %s, %s, %s, %s)"
-        value = (row['Course_ID'], row['Course_Name'], row['Course_Desc'], row['Course_Status'], row['Course_Type'], row['Course_Category'])
-        cursor.execute(sql, value)
-        db_connection.commit()
-        print(value)
-    
-
-@app.route("/import_csv", methods=['POST'])
-def uploadFiles():
-   # get the uploaded file
-    uploaded_file = request.files['file']
-    if uploaded_file.filename != '':
-        # set the file path
-        file_path = os.path.join(app.config['UPLOAD_FOLDER'], uploaded_file.filename)
-    # save the file
-    uploaded_file.save(file_path)
-    
-    parseCSV(file_path)
-    return redirect(('http://localhost:8888/SPMProject/SPM%2520Project/htdocs/coursesManagement.html'))
-
+        
 @app.route("/view_roles")
 def view_Role():
     query = "SELECT * FROM Role"
@@ -271,6 +244,71 @@ def create_LJRole():
 # --------- Roles Management Functions ---------
 # -------------------- End ---------------------
 
+# --------- Course Management Functions ---------
+# -------------------- Start --------------------
+
+# [START] Function to convert CSV file to insert data into Database
+def parseCSV(filePath):
+   # CVS Column Names
+    col_names = ['Course_ID', 'Course_Name', 'Course_Desc', 'Course_Status', 'Course_Type', 'Course_Category']
+    # Use Pandas to parse the CSV file
+    csvData = pd.read_csv(filePath, names = col_names, header = None, encoding= 'unicode_escape', skiprows=1)
+    # Loop through the Rows
+    
+    for i, row in csvData.iterrows():
+        sql = "INSERT INTO Course_Test (Course_ID, Course_Name, Course_Desc, Course_Status, Course_Type, Course_Category) VALUES (%s, %s, %s, %s, %s, %s)"
+        value = (row['Course_ID'], row['Course_Name'], row['Course_Desc'], row['Course_Status'], row['Course_Type'], row['Course_Category'])
+        cursor.execute(sql, value)
+        db_connection.commit()
+        print(value)
+# [END] Function to convert CSV file to insert data into Database
+    
+# [START] Function to IMPORT all courses from CSV file
+@app.route("/import_csv", methods=['POST'])
+def uploadFiles():
+   # get the uploaded file
+    if('file' in request.files):
+        uploaded_file = request.files['file']
+        if uploaded_file.filename == 'courses.csv':
+            # set the file path
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], uploaded_file.filename)
+            # save the file
+            uploaded_file.save(file_path)
+            try:
+                parseCSV(file_path)
+                msg = {"msg":"Successfully imported courses !"}
+                return jsonify(msg)
+            except mysql.errors.IntegrityError:
+                msg = {"msg": "Duplicated courses found ! Import Fail !"}
+                return jsonify(msg)
+            except Exception:
+                msg = {"msg": "Unable to commit to database !"}
+                return jsonify(msg)
+        else:
+            msg = {"msg": "Import only course.csv !"}
+            return jsonify(msg)
+    else:
+        return ({
+            "msg": ""
+        })
+# [END] Function to IMPORT all courses from CSV file
+
+# [START] Function to GET all courses 
+@app.route("/view-course-list")
+def courses():
+    query = "SELECT * FROM Course"
+    cursor.execute(query)
+    courseUnderSkill = cursor.fetchall()
+    
+    return jsonify(
+        {
+            "courses": courseUnderSkill
+        }
+    )
+# [END] Function to GET all courses 
+
+# --------- Course Management Functions ---------
+# -------------------- END --------------------
 
 # [START] Function to GET active courses based on specified course ID
 def getCourseByID(course_id):
@@ -307,52 +345,7 @@ def skill_by_course(skillID):
     )
 # [END] Function to GET courses based on a specified skill ID
 
-
-# display list of courses
-@app.route("/view-course-list")
-def courses():
-    query = "SELECT * FROM Course_Test"
-    cursor.execute(query)
-    courseUnderSkill = cursor.fetchall()
-    return jsonify(
-        {
-            "data": courseUnderSkill
-        }
-    )
-
-# display list of skills
-@app.route("/view-skills")
-def skills():
-    query = "SELECT * FROM Skill"
-    cursor.execute(query)
-    skills = cursor.fetchall()
-    return jsonify(
-        {
-            "data": skills
-        }
-    )
-# 
-@app.route("/view_skills/<int:ljRole_Id>")
-def view_skills(ljRole_Id):
-    # get relevant skills ID matched with roleId
-    skillsId = get_skills_id(ljRole_Id)
-    
-    skillsIdQuery = "("
-    for item in skillsId:
-        skillsIdQuery += str(item[0]) + ","
-    skillsIdQuery = skillsIdQuery[:-1]
-    skillsIdQuery += ")"
-    # get skills that match skills id retrieved earlier and are active 
-    query = "SELECT * FROM Skill WHERE skill_id in" + str(skillsIdQuery)
-    cursor.execute(query)
-    skills = cursor.fetchall()
-    return jsonify(
-        {
-            "data": skills
-        }
-    ), 200
-
-# display skill mapping of roles and courses
+# [START] Function to GET skill mapping of roles and courses based on a specified skill ID
 @app.route("/view-skill-mapping/<int:skillID>")
 def skill_mapping(skillID):
     query = f"SELECT * FROM Skill WHERE skill_id = {skillID}" 
@@ -384,18 +377,16 @@ def skill_mapping(skillID):
             "courses": courseUnderSkill
         }
     )
+# [END] Function to GET skill mapping of roles and courses based on a specified skill ID
 
-# show skill mapping of roles and courses
+# [START] Function to GET skill mapping of roles name and course names based on a specified skill ID
 @app.route("/update-skill-mapping/<int:skillID>")
 def update_skill_mapping(skillID):
-    
-    view_Role()
-    courses()
     courseList = requests.get("http://0.0.0.0:5000/view-course-list")
     courseList.raise_for_status()
     jsoncourseList = courseList.json()
     # rename key in dictionary
-    jsoncourseList["courses"] = jsoncourseList.pop("data") 
+    jsoncourseList["courses"] = jsoncourseList.pop("courses") 
 
     skill = "SELECT * FROM Skill WHERE skill_id="+str(skillID)
     cursor.execute(skill)
@@ -407,84 +398,137 @@ def update_skill_mapping(skillID):
     # rename key in dictionary
     jsonroleList["roles"] = jsonroleList.pop("data") 
     
-
-    query = "SELECT c.course_id,c.course_name FROM Course_Skill cs,Course c WHERE c.course_id = cs.course_id AND skill_id =" + str(skillID)
-    cursor.execute(query)
-    currentMappedCourses = cursor.fetchall()
-    print(currentMappedCourses)
     query = "SELECT lr.ljrole_id, lr.ljrole_name FROM LJRole_Skill lrs, LJRole lr WHERE lrs.ljrole_id = lr.ljrole_id  AND skill_id =" + str(skillID)
     cursor.execute(query)
     currentMappedRoles = cursor.fetchall()
 
-    for course in jsoncourseList["courses"]:
-        if course[0] in currentMappedCourses:
-            jsoncourseList["courses"].remove(course)
-
-    #print(jsoncourseList["courses"])
+    currentMapped = requests.get("http://0.0.0.0:5000/view-skill-mapping/"+str(skillID))
+    currentMapped.raise_for_status()
+    cm = currentMapped.json()
 
     csr = {}
     
     csr.update(jsonroleList)
     csr.update(jsoncourseList)
+    
+    for x in cm['courses']:
+        for y in  csr['courses']:
+            if(x[0] == y[0]):
+                csr['courses'].remove(y)
+    
+    for x in cm['roles']:
+        for y in  csr['roles']:
+            if(x[0] == y[0]):
+                csr['roles'].remove(y)
 
     return jsonify(
         {
             "skill" : skill,
             "roles": csr['roles'],
             "courses": csr['courses'],
-            "currentMappedCourses": currentMappedCourses,
-            "currentMappedRoles": currentMappedRoles 
+            "currentMappedRoles": cm['roles'],
+            "currentMappedCourses": cm['courses'] 
         }
     )
-# create skill mapping
+# [END] Function to GET skill mapping of roles name and course names based on a specified skill ID
+
+# [START] Function to ADD/DELETE/UPDATE skill mapping of roles name and course names based on a specified skill ID
 @app.route("/submit-mapping/<int:skillID>", methods=["POST"])
 def submit_mapping(skillID):
     # check for missing inputs
     data = request.get_json()
-    print(data)
     if not all(key in data.keys() for
-               key in ('selectedRoles', 'selectedCourses')):
+               key in ('selectedRoles', 'selectedCourses', 'currentMappedCourses','currentMappedRoles')):
         return jsonify({
             "message": "Incorrect JSON object provided."
         }), 500
   
     # if form validation succesful
     try:
-        selectedRoles = data['selectedRoles']
-        print(selectedRoles)
+
+        selectedRoles = []
+        selectedCourses = []
+
+        query = "DELETE FROM LJRole_Skill WHERE skill_id = " + str(skillID) + ";"
+        query2 = "DELETE FROM Course_Skill WHERE skill_id = " + str(skillID) + ";"
+        cursor.execute(query)
+        db_connection.commit()
+
+        cursor.execute(query2)
+        db_connection.commit()
+
+        for rid in data['currentMappedRoles']:
+            selectedRoles.append(rid[0])
+        for rid in data['selectedRoles']:
+            selectedRoles.append(rid)
+        
         for role in selectedRoles:
             query = "INSERT INTO LJRole_Skill (ljrole_id, skill_id) VALUES (%s, %s);"
-
             ljrole_skill_data = (role, skillID)
             cursor.execute(query, ljrole_skill_data)
             db_connection.commit()
-            print("pass")
-
-        checking = "SELECT * FROM LJRole_Skill;"
-        cursor.execute(checking)
-        print(cursor.fetchall())
-
-        selectedCourses = data['selectedCourses']
-        print(selectedCourses)
+            print('pass')
+        
+        for cid in data['currentMappedCourses']:
+            selectedCourses.append(cid[0])
+        for cid in data['selectedCourses']:
+            selectedCourses.append(cid)
 
         for course in selectedCourses:
             query2 = "INSERT INTO Course_Skill(course_id, skill_id) VALUES (%s,%s);"
             course_skill_data = (course, skillID)
             cursor.execute(query2, course_skill_data)
             db_connection.commit()
-            
-        checking = "SELECT * FROM Course_Skill"
-        cursor.execute(checking)
-        print(cursor.fetchall())
+            print('pass')
+       
+
+        
         return jsonify("success"), 201
 
     except Exception:
         return jsonify({
             "message": "Unable to commit to database."
         }), 500
+# [END] Function to ADD/DELETE/UPDATE skill mapping of roles name and course names based on a specified skill ID
+# [START] Function to GET all skills 
+@app.route("/view-skills")
+def skills():
+    query = "SELECT * FROM Skill"
+    cursor.execute(query)
+    skills = cursor.fetchall()
+    return jsonify(
+        {
+            "data": skills
+        }
+    )
+# [END] Function to GET all skills 
+
+# --------- Skill Management Functions ---------
+# -------------------- END --------------------
 
 # --------- Staff Learning Journey Creation Functions ---------
 # --------------------------- Start ---------------------------
+# [START] Function to GET all skills based on specified Learning Journey role ID
+@app.route("/view_skills/<int:ljRole_Id>")
+def view_skills(ljRole_Id):
+    # get relevant skills ID matched with roleId
+    skillsId = get_skills_id(ljRole_Id)
+    
+    skillsIdQuery = "("
+    for item in skillsId:
+        skillsIdQuery += str(item[0]) + ","
+    skillsIdQuery = skillsIdQuery[:-1]
+    skillsIdQuery += ")"
+    # get skills that match skills id retrieved earlier and are active 
+    query = "SELECT * FROM Skill WHERE skill_id in" + str(skillsIdQuery)
+    cursor.execute(query)
+    skills = cursor.fetchall()
+    return jsonify(
+        {
+            "data": skills
+        }
+    ), 200
+# [END] Function to GET all skills based on specified Learning Journey role ID
 
 # [START] Function to get staff learning journey
 def get_all_staff_lj(staffId):
