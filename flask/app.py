@@ -47,26 +47,46 @@ def parseCSV(filePath):
     # Use Pandas to parse the CSV file
     csvData = pd.read_csv(filePath, names = col_names, header = None, encoding= 'unicode_escape', skiprows=1)
     # Loop through the Rows
+    
     for i, row in csvData.iterrows():
         sql = "INSERT INTO Course_Test (Course_ID, Course_Name, Course_Desc, Course_Status, Course_Type, Course_Category) VALUES (%s, %s, %s, %s, %s, %s)"
         value = (row['Course_ID'], row['Course_Name'], row['Course_Desc'], row['Course_Status'], row['Course_Type'], row['Course_Category'])
         cursor.execute(sql, value)
         db_connection.commit()
         print(value)
+       
+    
+
 
 @app.route("/import_csv", methods=['POST'])
 def uploadFiles():
    # get the uploaded file
-    uploaded_file = request.files['file']
-    if uploaded_file.filename != '':
-        # set the file path
-        file_path = os.path.join(app.config['UPLOAD_FOLDER'], uploaded_file.filename)
-    # save the file
-    uploaded_file.save(file_path)
+    if('file' in request.files):
+        uploaded_file = request.files['file']
+        if uploaded_file.filename == 'courses.csv':
+            # set the file path
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], uploaded_file.filename)
+            # save the file
+            uploaded_file.save(file_path)
+            try:
+                parseCSV(file_path)
+                msg = {"msg":"Successfully imported courses !"}
+                return jsonify(msg)
+            except mysql.errors.IntegrityError:
+                msg = {"msg": "Duplicated courses found ! Import Fail !"}
+                return jsonify(msg)
+            except Exception:
+                msg = {"msg": "Unable to commit to database !"}
+                return jsonify(msg)
+        else:
+            msg = {"msg": "Import only course.csv !"}
+            return jsonify(msg)
+    else:
+        return ({
+            "msg": ""
+        })
     
-    parseCSV(file_path)
-    return redirect(('http://localhost:8888/SPMProject/SPM%2520Project/htdocs/coursesManagement.html'))
-
+        
 @app.route("/view_roles")
 def view_Role():
     query = "SELECT * FROM Role"
@@ -303,12 +323,13 @@ def skill_by_course(skillID):
 # display list of courses
 @app.route("/view-course-list")
 def courses():
-    query = "SELECT * FROM Course_Test"
+    query = "SELECT * FROM Course"
     cursor.execute(query)
     courseUnderSkill = cursor.fetchall()
+    
     return jsonify(
         {
-            "data": courseUnderSkill
+            "courses": courseUnderSkill
         }
     )
 
@@ -360,14 +381,11 @@ def skill_mapping(skillID):
 # show skill mapping of roles and courses
 @app.route("/update-skill-mapping/<int:skillID>")
 def update_skill_mapping(skillID):
-    
-    view_Role()
-    courses()
     courseList = requests.get("http://0.0.0.0:5000/view-course-list")
     courseList.raise_for_status()
     jsoncourseList = courseList.json()
     # rename key in dictionary
-    jsoncourseList["courses"] = jsoncourseList.pop("data") 
+    jsoncourseList["courses"] = jsoncourseList.pop("courses") 
 
     skill = "SELECT * FROM Skill WHERE skill_id="+str(skillID)
     cursor.execute(skill)
@@ -379,33 +397,36 @@ def update_skill_mapping(skillID):
     # rename key in dictionary
     jsonroleList["roles"] = jsonroleList.pop("data") 
     
-
-    query = "SELECT c.course_id,c.course_name FROM Course_Skill cs,Course c WHERE c.course_id = cs.course_id AND skill_id =" + str(skillID)
-    cursor.execute(query)
-    currentMappedCourses = cursor.fetchall()
-    print(currentMappedCourses)
     query = "SELECT lr.ljrole_id, lr.ljrole_name FROM LJRole_Skill lrs, LJRole lr WHERE lrs.ljrole_id = lr.ljrole_id  AND skill_id =" + str(skillID)
     cursor.execute(query)
     currentMappedRoles = cursor.fetchall()
 
-    for course in jsoncourseList["courses"]:
-        if course[0] in currentMappedCourses:
-            jsoncourseList["courses"].remove(course)
-
-    #print(jsoncourseList["courses"])
+    currentMapped = requests.get("http://0.0.0.0:5000/view-skill-mapping/"+str(skillID))
+    currentMapped.raise_for_status()
+    cm = currentMapped.json()
 
     csr = {}
     
     csr.update(jsonroleList)
     csr.update(jsoncourseList)
+    
+    for x in cm['courses']:
+        for y in  csr['courses']:
+            if(x[0] == y[0]):
+                csr['courses'].remove(y)
+    
+    for x in cm['roles']:
+        for y in  csr['roles']:
+            if(x[0] == y[0]):
+                csr['roles'].remove(y)
 
     return jsonify(
         {
             "skill" : skill,
             "roles": csr['roles'],
             "courses": csr['courses'],
-            "currentMappedCourses": currentMappedCourses,
-            "currentMappedRoles": currentMappedRoles 
+            "currentMappedRoles": cm['roles'],
+            "currentMappedCourses": cm['courses'] 
         }
     )
 # create skill mapping
@@ -413,43 +434,52 @@ def update_skill_mapping(skillID):
 def submit_mapping(skillID):
     # check for missing inputs
     data = request.get_json()
-    print(data)
     if not all(key in data.keys() for
-               key in ('selectedRoles', 'selectedCourses')):
+               key in ('selectedRoles', 'selectedCourses', 'currentMappedCourses','currentMappedRoles')):
         return jsonify({
             "message": "Incorrect JSON object provided."
         }), 500
   
     # if form validation succesful
     try:
-        selectedRoles = data['selectedRoles']
-        print(selectedRoles)
+
+        selectedRoles = []
+        selectedCourses = []
+
+        query = "DELETE FROM LJRole_Skill WHERE skill_id = " + str(skillID) + ";"
+        query2 = "DELETE FROM Course_Skill WHERE skill_id = " + str(skillID) + ";"
+        cursor.execute(query)
+        db_connection.commit()
+
+        cursor.execute(query2)
+        db_connection.commit()
+
+        for rid in data['currentMappedRoles']:
+            selectedRoles.append(rid[0])
+        for rid in data['selectedRoles']:
+            selectedRoles.append(rid)
+        
         for role in selectedRoles:
             query = "INSERT INTO LJRole_Skill (ljrole_id, skill_id) VALUES (%s, %s);"
-
             ljrole_skill_data = (role, skillID)
             cursor.execute(query, ljrole_skill_data)
             db_connection.commit()
-            print("pass")
-
-        checking = "SELECT * FROM LJRole_Skill;"
-        cursor.execute(checking)
-        print(cursor.fetchall())
-
-        selectedCourses = data['selectedCourses']
-        print(selectedCourses)
+            print('pass')
+        
+        for cid in data['currentMappedCourses']:
+            selectedCourses.append(cid[0])
+        for cid in data['selectedCourses']:
+            selectedCourses.append(cid)
 
         for course in selectedCourses:
             query2 = "INSERT INTO Course_Skill(course_id, skill_id) VALUES (%s,%s);"
             course_skill_data = (course, skillID)
             cursor.execute(query2, course_skill_data)
             db_connection.commit()
-            print("pass")
-        print("completed")
+            print('pass')
+       
 
-        checking = "SELECT * FROM Course_Skill"
-        cursor.execute(checking)
-        print(cursor.fetchall())
+        
         return jsonify("success"), 201
 
     except Exception:

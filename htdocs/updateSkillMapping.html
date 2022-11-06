@@ -49,6 +49,12 @@
                     </tr>
                 </thead>
                 <tbody>
+                    <tr v-for="cMr in currentMappedRoles">
+                        <td><strong>{{ cMr[1] }}</strong></td>
+                        <td>
+                            <input type="checkbox" :id="cMr[0]" :value="cMr[0]" v-model="cMr" />
+                        </td>
+                    </tr>
                     <tr v-for="role in roles">
                         <td><strong>{{ role[1] }}</strong></td>
                         <td><input type="checkbox" :id="role[0]" :value="role[0]" v-model="selectedRoles"></td>
@@ -64,11 +70,17 @@
                     </tr>
                 </thead>
                 <tbody>
+                    <tr v-for="cMc in currentMappedCourses">
+                        <td><strong>{{ cMc[1] }}</strong></td>
+                        <td>
+                            <input type="checkbox" :id="cMc[0]" :value="cMc[0]" v-model="cMc" />
+                        </td>
+                    </tr>
                     <tr v-for="course in courses">
                         <td><strong>{{ course[1] }}</strong></td>
                         <td><input type="checkbox" :id="course[0]" :value="course[0]" v-model="selectedCourses"></td>
                     </tr>
-                </tbody>
+                </tbody> 
             </table>
         </form>
         <a v-bind:href="'skillMapping.html?skill_id='+skills[0][0]"><button type="submit" class="btn btn-primary mb-2">Cancel Mapping</button></a>
@@ -86,19 +98,37 @@
                 skills: [],
                 courses: [],
                 selectedCourses: [],
-                error: ''
+                error: '',
+                currentMappedCourses: [],
+                currentMappedRoles: []
             },
             methods: {
                 // submit mappings
                 submitMapping: function() {
-                        axios.post('http://localhost:5000/submit-mapping/'+myParam, {
-                                selectedRoles: this.selectedRoles,
-                                selectedCourses: this.selectedCourses,
-                            })
-                        .then(response => {
-                                return alert("You have successfully done your mapping.")
-                            })
-                        .catch(error => { this.error = error.response.data.message });
+                        proceed = confirm("Are you sure you want to proceed with mapping ?")
+                        event.preventDefault();
+                        if(proceed == true){
+                            if(this.selectedCourses.length == 0 && this.currentMappedCourses.length == 0){
+                                return alert("Please select at least 1 Course !")
+                            } else if (this.selectedRoles.length == 0 && this.currentMappedRoles == 0){
+                                return alert("Please select at least 1 Role !")
+                            }
+                            axios.post('http://localhost:5000/submit-mapping/'+myParam, {
+                                    selectedRoles: this.selectedRoles,
+                                    selectedCourses: this.selectedCourses,
+                                    currentMappedCourses: this.currentMappedCourses,
+                                    currentMappedRoles: this.currentMappedRoles
+                                })
+                            .then(response => {
+                                    window.location.replace("./skillMapping.html?skill_id="+myParam);
+                                    return alert("You have successfully done your mapping.")
+                                })
+                            .catch(error => { 
+                                this.error = error.response.data.message 
+                                window.location.replace("./skillMapping.html?skill_id="+myParam);
+                                return alert(this.error)
+                            });
+                        }
                     
                 }
             },
@@ -109,7 +139,9 @@
                         this.courses = response.data.courses,
                         this.roles = response.data.roles,
                         this.skills = response.data.skill,
-                        this.selectedCourses = response.data.currentMappedCourses
+                        this.currentMappedCourses = response.data.currentMappedCourses,
+                        this.currentMappedRoles = response.data.currentMappedRoles
+                        
                     })
                     .catch(error => alert(error));
             }, 
