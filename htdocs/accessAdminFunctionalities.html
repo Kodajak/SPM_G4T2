@@ -39,58 +39,36 @@
     </div>
 
     <div class = 'container'>
-        <div class = 'card text-center'>
-            <div class="card-deck">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">Create Learning Journey</h5>
-                        <p class="card-text"><a href="./createLearningJourney.html" class="btn btn-primary">Select</a></p>
-                    </div>
-                </div>
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">My Learning Journey</h5>
-                        <p class="card-text"><a href="./myLearningJourney.html" class="btn btn-primary">Select</a></p>
-                    </div>
-                </div>
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">Skills Mapping</h5>
-                        <p class="card-text"><a href="./viewSkills.html"  class="btn btn-primary">Select</a></p>
-                    </div>
-                </div>
+        <nav>
+            <div class="nav nav-tabs" id="nav-tab" role="tablist">
+                <a class="nav-item nav-link active" id="nav-clj-tab" data-toggle="tab" href="#nav-clj" role="tab" aria-controls="nav-clj" aria-selected="true">Create Learning Journey</a>
+                <a class="nav-item nav-link" id="nav-mlj-tab" data-toggle="tab" href="#nav-mlj" role="tab" aria-controls="nav-mlj" aria-selected="false">My Learning Journey</a>
+                <a class="nav-item nav-link" id="nav-smapping-tab" data-toggle="tab" href="#nav-smapping" role="tab" aria-controls="nav-smapping" aria-selected="false">Skills Mapping</a>
+                <a class="nav-item nav-link" id="nav-rm-tab" data-toggle="tab" href="#nav-rm" role="tab" aria-controls="nav-rm" aria-selected="false">Roles Management</a>
+                <a class="nav-item nav-link" id="nav-smanagement-tab" data-toggle="tab" href="#nav-smanagement" role="tab" aria-controls="nav-smanagement" aria-selected="false">Skills Management</a>
+                <a class="nav-item nav-link" id="nav-cm-tab" data-toggle="tab" href="#nav-cm" role="tab" aria-controls="nav-cm" aria-selected="false">Course Management</a>
             </div>
-        </div>    
-    </div>
-    
-    <div class="container">
-        <h1></h1>
-    </div>
-
-    <div class = 'container'>
-        <div class = 'card text-center'>
-            <div class="card-deck">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">Roles Management</h5>
-                        <p class="card-text"><a href="./rolesManagement.html" class="btn btn-primary">Select</a></p>
-                    </div>
-                </div>
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">Skills Management</h5>
-                        <p class="card-text"><a href="./skillManagement.html" class="btn btn-primary">Select</a></p>
-                    </div>
-                </div>
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">Course Management</h5>
-                        <p class="card-text"><a href="./coursesManagement.html" class="btn btn-primary">Select</a></p>
-                    </div>
-                </div>
-
+        </nav>
+        <div class="tab-content" id="nav-tabContent">
+            <div class="tab-pane fade show active" id="nav-clj" role="tabpanel" aria-labelledby="nav-clj-tab">
+                <iframe src="./createLearningJourney.html" width ="100%" height = "1000" ></iframe>
             </div>
-        </div>    
+            <div class="tab-pane fade" id="nav-mlj" role="tabpanel" aria-labelledby="nav-mlj-tab">
+                <iframe src="./myLearningJourney.html"  width ="100%" height = "1000" ></iframe>
+            </div>
+            <div class="tab-pane fade" id="nav-smapping" role="tabpanel" aria-labelledby="nav-smapping-tab">
+                <iframe src="./viewSkills.html" width ="100%" height = "1000" ></iframe>
+            </div>
+            <div class="tab-pane fade" id="nav-rm" role="tabpanel" aria-labelledby="nav-rm-tab">
+                <iframe src="./rolesManagement.html"  width ="100%" height = "1000" ></iframe>
+            </div>
+            <div class="tab-pane fade" id="nav-smanagement" role="tabpanel" aria-labelledby="nav-smanagement-tab">
+                <iframe src="./skillManagement.html" width ="100%" height = "1000" ></iframe>
+            </div>
+            <div class="tab-pane fade" id="nav-cm" role="tabpanel" aria-labelledby="nav-cm-tab">
+                <iframe src="./coursesManagement.html"  width ="100%" height = "1000" ></iframe>
+            </div>
+        </div>
     </div>
 
 </body>
