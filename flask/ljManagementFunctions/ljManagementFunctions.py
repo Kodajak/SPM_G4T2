@@ -50,6 +50,7 @@ def view_skills(ljRole_Id):
 def getCourseByID(course_id):
     query = "SELECT DISTINCT * FROM Course WHERE course_status='Active'" + "AND course_id ='" + str(course_id)+"'"
     cursor.execute(query)
+    # print(cursor.fetchall())
     return cursor.fetchall()
 # [END] Function to GET active courses based on specified course ID
 
@@ -276,7 +277,7 @@ def get_course_details(courseId):
 
 # [START] Function to get course registration details for a specific staff ID
 def get_course_registration_by_staffId(staffId, courseId):
-    query = "SELECT course_id, reg_status, completion_status FROM Registration WHERE staff_id=" + str(staffId[0][0]) + " AND course_id='" + str(courseId) + "'"
+    query = "SELECT course_id, reg_status, completion_status FROM Registration WHERE staff_id=" + str(staffId) + " AND course_id='" + str(courseId) + "'"
     cursor.execute(query)
     return cursor.fetchall()
 # [END] Function to get course registration details for a specific staff ID
@@ -396,6 +397,7 @@ def viewCoursesToAdd(ljourney_id):
     
     skillsId = get_skills_id(roleId)
     skills = get_active_skill(skillsId)
+    print(skills)
     skillList = []
 
     # creating skillList where format = [[skillId, skill 1, (acquired/unacquired)], [chosen course names, (completed/ongoing/registered/waitlist/not registered)]]
@@ -406,7 +408,6 @@ def viewCoursesToAdd(ljourney_id):
         
         # get courses under skill
         courses_in_skill = get_course_by_skillId(skillId)
-        skillAcquired = False
         
         # check if course not chosen
         for course in courses_in_skill:
@@ -425,11 +426,12 @@ def viewCoursesToAdd(ljourney_id):
 
                     # get course status and registration
                     courseStatusDetails = get_course_registration_by_staffId(staffId, courseId)
-                    
                     # extract actual status
                     if courseStatusDetails == []:
+                        print(courseStatusDetails)
                         courseStatus = "Incomplete"
                     else:
+                        print(courseStatusDetails[0][2])
                         if courseStatusDetails[0][2] == '':
                             courseStatus = courseStatusDetails[0][1]
                         else:
@@ -439,7 +441,7 @@ def viewCoursesToAdd(ljourney_id):
         
         skillCourseDetails = [[skillId, skill[1]], courseList]
         skillList.append(skillCourseDetails)
-    
+        print(skillCourseDetails)
     status = ljDetails[0][3]
     result = [ljourney_id, roleName, skillList, status]
     return jsonify(
