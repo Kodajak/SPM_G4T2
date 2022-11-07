@@ -4,7 +4,7 @@ const vm = new Vue({
         skills : []
     },
     mounted: function() {
-        axios.get('http://localhost:5000/view-skills' )
+        axios.get('http://localhost:5000/view_Skills' )
             .then(response => {
                 this.skills = response.data.data
             })

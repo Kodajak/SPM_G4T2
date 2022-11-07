@@ -1,8 +1,6 @@
 import pytest
 import unittest
 import requests
-import json
-from app import app
 import mysql.connector as mysql
 
 HOST = "database-1.cmqbhk3xoixj.ap-southeast-1.rds.amazonaws.com" # or "domain.com"
@@ -43,25 +41,25 @@ class TestSkill(unittest.TestCase):
         return super().tearDown()
 
     def test_view_skills(self):
-        response = app.test_client().get('/view_Skills')
-        res = json.loads(response.data.decode('utf-8')).get("data")
-        assert response.status_code == 200
-        assert type(res) is list
-        assert type(res[0]) is list
+        r = requests.get('http://localhost:5000/view_Skills')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.encoding, 'utf-8')
+        self.assertEqual(type(r.json()['data']), list)
+        self.assertEqual(type(r.json()['data'][0]), list)
 
     def test_get_CourseSkill(self):
-        response = app.test_client().get('/get_CourseSkill')
-        res = json.loads(response.data.decode('utf-8')).get("data")
-        assert response.status_code == 200
-        assert type(res) is list
-        assert type(res[0]) is list
+        r = requests.get('http://localhost:5000/get_CourseSkill')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.encoding, 'utf-8')
+        self.assertEqual(type(r.json()['data']), list)
+        self.assertEqual(type(r.json()['data'][0]), list)
+
 
     def test_get_RoleSkill(self):
-        response = app.test_client().get('/get_RoleSkill')
-        res = json.loads(response.data.decode('utf-8')).get("data")
-        assert response.status_code == 200
-        assert type(res) is list
-        assert type(res[0]) is list
+        r = requests.get('http://localhost:5000/get_RoleSkill')
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.encoding, 'utf-8')
+        self.assertEqual(type(r.json()['data']), list)
 
     def test_createSkill(self):
         r = requests.post('http://localhost:5000/create_Skill', json={"data":["skill", "this is the skill description"]})
