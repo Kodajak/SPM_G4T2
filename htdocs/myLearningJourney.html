@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My learning Journey</title>
+
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"
+        integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+
+    <!-- Latest compiled and minified JavaScript -->
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js"
+        integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut"
+        crossorigin="anonymous"></script>
+
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js"
+        integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+</head>
+<body>
+    <div id="main-container">
+        <h1>My Learning Journeys</h1>
+
+        <div>
+            <button class="btn btn-primary" onclick="createLearningJourney()">Add New</button>
+        </div>
+
+        <div class="p-5">
+
+            <p v-for="journey in lj" >
+                Role: {{journey[2]}}
+                <br>
+                Skills: 
+                <span v-for="skill in journey[3]">{{skill}}</span>
+                <br>
+                Status: {{journey[4]}}
+                <br> 
+                <a v-bind:href="'learningJourneyDetails.html?ljourney_id='+journey[0]" class="btn btn-outline-secondary">View Details</a>
+                <button class="btn btn-outline-danger" @click="deleteLearningJourney(journey[0])" :value="journey[0]">Delete</button>
+                <br><br>
+            </p>
+
+        </div>
+    </div>
+
+    <script src="../js/myLearningJourney.js"></script>
+
+    
+</body>
+</html>
