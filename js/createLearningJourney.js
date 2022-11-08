@@ -16,7 +16,7 @@ const vm = new Vue({
     },
     watch: {
         selectedRole: function (selectedRole) {
-            axios.get('http://localhost:5000/view_active_skills/' + selectedRole[0])
+            axios.get('http://localhost:5000/view_skills/' + selectedRole[0])
             .then(response => {
                 this.skills = response.data.data
             })
@@ -73,6 +73,7 @@ const vm = new Vue({
     mounted: function() {
         axios.get('http://localhost:5000/view_filteredLjRoles/' + this.staffId)
             .then(response => {
+                // all roles
                 this.roles = response.data.data
             })
             .catch(error => alert(error));

@@ -32,22 +32,8 @@
 </head>
 
 <body>
-    
     <div id="main-container" class="container">
-        
         <h1 class="display-4">List of Course</h1>
-        <div class="container">
-            <form id="importlms" onsubmit="event.preventDefault()" enctype="multipart/form-data"
-                action="http://localhost:5000/import_csv" method="POST">
-                <div class="form-group">
-                    <div class="mb-3">
-                        <label for="formFile" class="form-label">Attach Course CSV file to import</label>
-                        <input class="form-control" accept=".csv" type="file" id="file" name="file" ref="file">
-                    </div>
-                    <button type="submit" class="btn btn-primary mb-2" @click="validateImport">Import CSV</button>
-                </div>
-            </form>
-        </div>
         <table id="skillsTable" class='table table-striped' border='1'>
             <thead class='thead-dark'>
                 <tr>
@@ -64,9 +50,33 @@
                 </tr>
             </tbody>
         </table>
-    
     </div>
-    
+    <div class="container">
+        <form enctype="multipart/form-data" action="http://localhost:5000/import_csv" method="POST" >
+            <div class="form-group">
+                <div class="mb-3">
+                    <label for="formFile" class="form-label">Attach Course CSV file to import</label>
+                    <input class="form-control" type="file" id="file" name="file">
+                </div>
+                <button type="submit" class="btn btn-primary mb-2">Import CSV</button>
+            </div>
+        </form>
+    </div>
+    <script>
+        const vm = new Vue({
+            el: '#main-container',
+            data: {
+                courses: []
+            },
+            mounted: function() {
+                axios.get('http://localhost:5000/view-course-list')
+                    .then(response => {
+                        this.courses = response.data.data
+                    })
+                    .catch(error => alert(error));
+            }
+        });
+    </script>
 </body>
-<script src="../js/coursesManagement.js"></script>
+
 </html>

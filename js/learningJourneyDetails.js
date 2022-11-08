@@ -5,9 +5,10 @@ const vm = new Vue({
         selectedLj: '',
         ljDetails: '',
         addCourseButton: false,
-        removeCourseButton: false,
+        removeCourseButton: true,
         availCourses: '',
         noNewCourseList: []
+
     },
 
     methods: {
@@ -60,30 +61,15 @@ const vm = new Vue({
                             let completed_count = 0
 
                             // if there are courses that are not completed, show add courses button
+
                             for (course of skill[1]) {
-                                if (this.addCourseButton == true) {
-                                    break
-                                }
                                 if (course[2] != 'Completed') {
+                                    // console.log(course[2])
                                     this.addCourseButton = true
-                                    var btn = document.createElement("button");  
-                                    btn.innerHTML = "Add Courses"
-                                    
-                                    let addCourseLink = './addLearningJourneyCourse.html?ljourney_id=' + this.ljDetails[0]
-                                    
-                                    btn.onclick = function() {
-                                        return window.location.replace(addCourseLink)
-                                    }
-
-                                    btn.className = 'btn btn-outline-secondary'
-
-                                    document.getElementById("updateButtons").appendChild(btn)
-                                    
-                                    break
-                                } 
-                                else if (course[2] == 'Completed'){
+                                } else if (course[2] == 'Completed'){
                                     completed_count += 1
                                 }
+                        
                             }
                             if (completed_count == skill[1].length) {
                                 this.noNewCourseList.push(skillId)
@@ -91,39 +77,6 @@ const vm = new Vue({
 
                         }
                     }
-
-                    // if there is only 1 Unique course selected, hide remove button
-                    let tempCourseList = []
-                        for (skill of this.ljDetails[2]) {
-                            skillCourseList = skill[1]
-                            
-                            if (skillCourseList.length != 0) {
-                                courseId = skillCourseList[0][0]
-                                
-                                // check if unique
-                                if (!tempCourseList.includes(courseId)) {
-                                    tempCourseList.push(courseId)
-                                }
-                            }
-                        }
-                        if (tempCourseList.length > 1) {  
-                            var btn = document.createElement("button");  
-                            btn.innerHTML = "Remove Courses"
-                            
-                            let removeCourseLink = './removeLearningJourneyCourse.html?ljourney_id=' + this.ljDetails[0]
-                            
-                            btn.onclick = function() {
-                                return window.location.replace(removeCourseLink)
-                            }
-
-                            btn.className = 'btn btn-outline-danger ml-3'
-
-                            document.getElementById("updateButtons").appendChild(btn)
-                        }
-                        console.log(tempCourseList)
-
-                        
-                        this.selectedLj = myParam
                     
                 })
                 .catch(error => alert(error));
