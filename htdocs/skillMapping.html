@@ -45,12 +45,15 @@
                     <tr>
                         <th>Role Name</th>
                         <th>Role Description</th>
+                        <th>Delete</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr v-for="role in roles">
                         <td><strong>{{ role[1] }}</strong></td>
                         <td><strong>{{ role[2] }}</strong></td>
+                        <input type="hidden" name="roleID" id="roleID" :value="role[0]"/>
+                        <td><strong><button @click="removeRole(role[0],role[1])" class="btn btn-danger">Remove Roles</button></strong>
                     </tr>
                 </tbody>
             </table>
@@ -64,6 +67,7 @@
                             <th>Course Status</th>
                             <th>Course Course Type</th>
                             <th>Course Category</th>
+                            <th>Delete</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -73,6 +77,8 @@
                             <td><strong>{{ course[3] }}</strong></td>
                             <td><strong>{{ course[4] }}</strong></td>
                             <td><strong>{{ course[5] }}</strong></td>
+                            <input type="hidden" name="courseID" id="courseID" :value="course[0]"/>
+                        <td><strong><button @click="removeCourse(course[0],course[1])" class="btn btn-danger">Remove Course</button></strong>
                         </tr>
                     </tbody>
             </table>
@@ -82,27 +88,9 @@
         
     </div>
     <script>
-        const vm = new Vue({
-            el: '#main-container',
-            data: {
-                skills: [],
-                courses: [],
-                roles: []
-            },
-            mounted: function() {
-                let urlParams = new URLSearchParams(window.location.search);
-                let myParam = urlParams.get('skill_id');
-                axios.get('http://localhost:5000/view-skill-mapping/'+myParam )
-                    .then(response => {
-                        this.skills = response.data.skill,
-                        this.courses = response.data.courses,
-                        this.roles = response.data.roles
-                    })
-                    .catch(error => alert(error));
-            }
-        });
+        
     </script>
-    <!-- <script src="js/navbar.js"></script> -->
+    <script src="../js/skillMapping.js"></script>
 
 </body>
 

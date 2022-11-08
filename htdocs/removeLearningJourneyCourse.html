@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Learning Journey Details</title>
+    <title>Removed Courses from Learning Journey</title>
 
     <!-- Bootstrap libraries -->
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -30,38 +30,33 @@
 </head>
 <body>
     <div id="main-container">
-        <div class="row my-2">
-            <button type="button" @click="viewAllLearningJourneys" class="btn btn-outline-secondary ml-4">Back</button><br>
-            <button type="button" style="display: inline-block;" @click="deleteLearningJourney(ljDetails[0])" :value="ljDetails[0]" class="btn btn-danger ml-3" style="display: inline-block; vertical-align: top;">Delete Learning Journey</button>
-        </div>
-        
-        <div class="px-5">
-            <h1>{{ljDetails[1]}} Learning Journey</h1><br>
-            <h5>Status: {{ljDetails[3]}}</h5><br>
-            <h5 style="display: inline">Skills and Courses:</h5>
-            
-            <span id="updateButtons" style="display:inline;">
-            </span>
-            
-
-            <p v-for="skill in ljDetails[2]">
-                <b>{{skill[0][1]}}<span v-if="skill[0][2] == true">✅</span>:</b>
+        <h1>Remove Courses from {{ljDetails[1]}} Learning Journey</h1>
+        <h5>Skills and Courses:</h5>
+        <form>
+            <p v-for="skill in ljDetails[2]" v-if="skill[1].length != 0">
+                <b>{{skill[0][1]}}:</b>
                 <br>
                 <span v-if="skill[1] != ''">
                     <span v-for="course in skill[1]">
-                        {{course[1]}} ({{course[2]}})<br>
+                        <input type="checkbox" :id="course[0]" :value="course[0]" v-model="selectedCourses" 
+                        v-if="course[2] != 'Completed'">
+                        <input type="checkbox" :id="course[0]" :value="course[0]" v-model="selectedCourses" v-else disabled>
+                        
+                        <label :for="course[0]">{{course[1]}} <span v-if="course[2] != 'Register Now'">({{course[2]}})</span>
+                        <span v-else>(Incomplete)</span><br></label><br>
                     </span>
                 </span>
-
-                <span v-if="skill[1] == '' && noNewCourseList.includes(skill[0][0])">There are no available courses to be added at the moment</span>
-
-                <span v-if = "skill[1] == '' && !noNewCourseList.includes(skill[0][0])">You have not added a course for this skill</span>
             </p><br>
-        </div>
+
+
+            <a v-bind:href="'learningJourneyDetails.html?ljourney_id='+ljDetails[0]" class="btn btn-outline-secondary">Cancel</a><br>
+            <button @click="removeCourseFromLj" class="btn btn-danger">Remove Courses</button>
+        </p><br>
+        </form>
  
     </div>
 
 </body>
+<script src="../js/removeLearningJourneyCourse.js"></script>
 
-<script src="../js/learningJourneyDetails.js"></script>
 </html>
