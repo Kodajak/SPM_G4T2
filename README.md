@@ -23,8 +23,6 @@ This project helps to provide an integration of LMS and LJS. The way of integrat
 10. From here, navigate through the pages and the fucntions.
 
 # Build and Test
-TODO: Describe and show how to build your code and run the tests. 
-Building codes:
 The way we made our project work is split into a few different languages and framework:
 1. HTML
 2. VueJS 
@@ -40,6 +38,8 @@ Python:
 9. flask_cors
 10. requests
 11. Python mysql connector 
+
+We used the test cases that we come up with to test the pages and functions that we have built and to certify that something meets the test cases we have our scrum master to verify.
 
 The CRUD of Roles and Skills are mainly handled by 1,2,2a,3,4,5,9 and 11.
 For importing of LMS CSV Course file, it is handled heavily by 8.
