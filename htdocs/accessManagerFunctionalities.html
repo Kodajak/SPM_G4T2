@@ -32,30 +32,48 @@
 </head>
 
 <body>
-    <div class = 'container'>
-        <nav class="navbar navbar-expand-lg navbar-light bg-light">
-            <a class="navbar-brand" href="#"><b>Manager User Page</b></a>  
-        </nav>
+    <div>
+        <ul class="nav justify-content-center bg-dark py-4">
+            <li class="nav-item">
+                <h1 class="text-light font-weight-bold">Manager User Page</h1>
+            </li>
+        </ul>
+        <div class="row">
+            <a class="ml-auto pr-4" href='./landingPage.html'>Return to Home</a>
+        </div>
     </div>
-
+    
     <div class = 'container'>
-        <div class = 'card text-center'>
-            <div class="card-deck">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">Create Learning Journey</h5>
-                        <p class="card-text"><a href="./createLearningJourney.html" class="btn btn-primary">Select</a></p>
-                    </div>
-                </div>
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">My Learning Journey</h5>
-                        <p class="card-text"><a href="./myLearningJourney.html" class="btn btn-primary">Select</a></p>
-                    </div>
+        <nav>
+            <div class="nav nav-tabs" id="nav-tab" role="tablist">
+                <a class="nav-item nav-link active" id="nav-clj-tab" data-toggle="tab" href="#nav-clj" role="tab" aria-controls="nav-clj" aria-selected="true">Create Learning Journey</a>
+                <a class="nav-item nav-link" id="nav-mlj-tab" data-toggle="tab" href="#nav-mlj" role="tab" aria-controls="nav-mlj" aria-selected="false">My Learning Journey</a>
+            </div>
+        </nav>
+        <div class="tab-content" id="nav-tabContent">
+            <div class="tab-pane fade show active" id="nav-clj" role="tabpanel" aria-labelledby="nav-clj-tab">
+                <iframe src="./createLearningJourney.html" width ="100%" height = "1000" ></iframe>
+            </div>
+            <div class="tab-pane fade" id="nav-mlj" role="tabpanel" aria-labelledby="nav-mlj-tab">
+                <iframe src="./myLearningJourney.html"  width ="100%" height = "1000" ></iframe>
+            </div>
+        </div>
+        <!-- <div class="card-deck">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Create Learning Journey</h5>
+                    <a href="./createLearningJourney.html" class="btn btn-primary">Select</a>
                 </div>
             </div>
-        </div>    
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">My Learning Journey</h5>
+                    <a href="./myLearningJourney.html" class="btn btn-primary">Select</a>
+                </div>
+            </div>
+        </div> -->
     </div>
+
 </body>
 
 </html>

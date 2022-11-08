@@ -48,6 +48,7 @@ def skill_mapping(skillID):
     cursor.execute(queryR)
     roleUnderSkill = cursor.fetchall()
 
+
     return jsonify(
         {
             "skill" : skill,

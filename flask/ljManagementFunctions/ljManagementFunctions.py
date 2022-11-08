@@ -111,7 +111,7 @@ def view_filteredRoles(staffId):
             existingRoles.append(role)
     return jsonify(
         {
-            "data": [ljFilteredRoles, existingRoles]
+            "data": (ljFilteredRoles, existingRoles)
         }
     ), 200
 # [END] Function to GET nested list of Unselected and Selected active roles
@@ -190,7 +190,7 @@ def create_lj():
             cursor.execute(query2, course_data)
             db_connection.commit()
 
-        return jsonify("success"), 201
+        return "success"
 
     except Exception:
         return jsonify({
@@ -366,7 +366,7 @@ def deleteLearningJourney(selectedLj):
         cursor.execute(query)
         db_connection.commit()
         
-        return jsonify("success", 201)
+        return "success"
 
     else:
         return jsonify({
@@ -472,7 +472,7 @@ def addCoursesToLj():
             course_data = (selectedLj, course)
             cursor.execute(query, course_data)
             db_connection.commit()
-        return jsonify("success"), 201
+        return "success"
 
     except Exception:
         return jsonify({
@@ -508,7 +508,7 @@ def removeCoursesFromLj():
             course_data = (selectedLj, course)
             cursor.execute(query, course_data)
             db_connection.commit()
-        return jsonify("success"), 201
+        return "course deletion success"
 
     except Exception:
         return jsonify({

@@ -23,8 +23,6 @@ This project helps to provide an integration of LMS and LJS. The way of integrat
 10. From here, navigate through the pages and the fucntions.
 
 # Build and Test
-TODO: Describe and show how to build your code and run the tests. 
-Building codes:
 The way we made our project work is split into a few different languages and framework:
 1. HTML
 2. VueJS 
@@ -45,6 +43,17 @@ The CRUD of Roles and Skills are mainly handled by 1,2,2a,3,4,5,9 and 11.
 For importing of LMS CSV Course file, it is handled heavily by 8.
 Panda is a framework mainly used for analytical purposes as it needs to sort data from CSV Files most of the time.
 For our project, we used Pandas to crawl through the csv file to extract the data in it and to import it into our database in order for the courses to be displayed for the staff and admin.
+
+We used the test cases that we came up with to test the pages and functions that we have built and to certify that something meets the test cases we have our scrum master to verify.
+
+Test Driven Development:
+1.
+2.
+3.
+4.
+
+
+
 
 # Contribute
 For our project, there are certain ways that we can improve on if there was more time given to us, however, code based isn't what is important here, but the process of the project completion.
