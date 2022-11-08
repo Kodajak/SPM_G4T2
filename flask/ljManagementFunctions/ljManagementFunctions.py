@@ -110,7 +110,7 @@ def view_filteredRoles(staffId):
             existingRoles.append(role)
     return jsonify(
         {
-            "data": [ljFilteredRoles, existingRoles]
+            "data": (ljFilteredRoles, existingRoles)
         }
     ), 200
 # [END] Function to GET nested list of Unselected and Selected active roles
