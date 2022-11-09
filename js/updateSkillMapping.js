@@ -21,7 +21,8 @@ const vm = new Vue({
                     if(this.selectedCourses.length + this.selectedRoles.length == 0){
                         return alert("Please select at least 1 Course/Role !")
                     }
-                    
+                    console.log('SELECTED ' + this.selectedRoles + ' AND ' + this.selectedCourses)
+                    console.log('CURRENT ' + this.currentMappedCourses + ' AND ' + this.currentMappedRoles)
                     axios.post('http://localhost:5000/submit-mapping/'+myParam, {
                             selectedRoles: this.selectedRoles,
                             selectedCourses: this.selectedCourses,
@@ -50,7 +51,6 @@ const vm = new Vue({
                 this.skills = response.data.skill,
                 this.currentMappedCourses = response.data.currentMappedCourses,
                 this.currentMappedRoles = response.data.currentMappedRoles
-                
             })
             .catch(error => alert(error));
     }, 

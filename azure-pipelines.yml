@@ -4,32 +4,32 @@
 # https://docs.microsoft.com/azure/devops/pipelines/languages/python
 
 trigger:
-- main
+  - main
 
 pool:
   vmImage: ubuntu-latest
 strategy:
   matrix:
     Python38:
-      python.version: '3.8'
+      python.version: "3.8"
     Python39:
-      python.version: '3.9'
+      python.version: "3.9"
     Python310:
-      python.version: '3.10'
+      python.version: "3.10"
 
 steps:
-- task: UsePythonVersion@0
-  inputs:
-    versionSpec: '3.8'
-  displayName: 'Use Python 3.8'
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: "3.8.5"
+    displayName: "Use Python 3.8.5"
 
-- script: |
-    python -m pip install --upgrade pip
-    pip install -r requirements.txt
-    pip install unittest
-  displayName: 'Install dependencies'
+  - script: |
+      python -m pip install --upgrade pip
+      pip install -r requirements.txt
+      pip install unittest
+    displayName: "Install dependencies"
 
-- script: |
-    pip install pytest pytest-azurepipelines
-    pytest
-  displayName: 'pytest'
+  - script: |
+      pip install pytest pytest-azurepipelines
+      pytest -s
+    displayName: "Run pytest"

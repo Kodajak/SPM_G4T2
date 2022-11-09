@@ -26,7 +26,7 @@ class TestSkill(unittest.TestCase):
         return super().setUp()
     
     def tearDown(self):
-        query = 'DELETE FROM Skill WHERE skill_name="Skill to Delete"' 
+        query = 'DELETE FROM Skill WHERE skill_id=999999' 
         cursor.execute(query)
         db_connection.commit()
 

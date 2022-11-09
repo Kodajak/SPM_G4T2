@@ -77,10 +77,6 @@ def update_skill_mapping(skillID):
     # rename key in dictionary
     jsonroleList["roles"] = jsonroleList.pop("data")
 
-    query = "SELECT lr.ljrole_id, lr.ljrole_name FROM LJRole_Skill lrs, LJRole lr WHERE lrs.ljrole_id = lr.ljrole_id  AND skill_id =" + str(skillID)
-    cursor.execute(query)
-    currentMappedRoles = cursor.fetchall()
-
     currentMapped = requests.get("http://0.0.0.0:5000/view-skill-mapping/"+str(skillID))
     currentMapped.raise_for_status()
     cm = currentMapped.json()
@@ -202,7 +198,7 @@ def submit_mapping(skillID):
 
 
 
-        return jsonify("success"), 201
+        return "success"
 
     except Exception:
         return jsonify({
