@@ -47,13 +47,14 @@ For our project, we used Pandas to crawl through the csv file to extract the dat
 We used the test cases that we came up with to test the pages and functions that we have built and to certify that something meets the test cases we have our scrum master to verify.
 
 Test Driven Development:
-1.
-2.
-3.
-4.
+The Test Driven Development (TDD) we implemented, utilizes python framework (PyTest) to frame and execute our TDD. To run execute our TDD: 
 
+1. cd into SPM%20Project/flask
+2. Run python main.py
+3. Open new terminal
+4. Run pytest -s
 
-
+PyTest will return the total number of tests executed, number of tests passed, number of tests failed, and the reason of the failure.
 
 # Contribute
 For our project, there are certain ways that we can improve on if there was more time given to us, however, code based isn't what is important here, but the process of the project completion.
