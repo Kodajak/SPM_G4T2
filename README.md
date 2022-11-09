@@ -10,16 +10,19 @@ This project helps to provide an integration of LMS and LJS. The way of integrat
     d. No password.
 3. Click on Test Connection.
 4. Clone project from our github and put in in your HTDOCS
-    a. 
-    b.
-    c.
-    d.
+    a. https://github.com/Kodajak/SPM_G4T2
+
+        Database Environment:
+        1.
+        2.
+        3.
+
 
 5. cd into SPM%20Project/flask
 6. Start WAMP/MAMP.
 7. On Terminal, key in: python3 app.py and press enter
-8. Now, go to your browsers and go to http://localhost:8888/SPMProject/SPM%2520Project/htdocs/viewSkills.html if you are on Mamp
-9. Now, go to your browsers and go to C:/wamp64/SPM%20Project/htdocs/viewSkills.html if you are on Wamp
+8. Now, go to your browsers and go to http://localhost:8888/SPMProject/SPM%2520Project/htdocs/landingPage.html if you are on Mamp
+9. Now, go to your browsers and go to C:/wamp64/SPM%20Project/htdocs/landingPage.html if you are on Wamp
 10. From here, navigate through the pages and the fucntions.
 
 # Build and Test
