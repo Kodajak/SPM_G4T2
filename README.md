@@ -6,22 +6,33 @@ This project helps to provide an integration of LMS and LJS. The way of integrat
 2. On MySql Workbench create a new connection and:
     a. Hostname: database-1.cmqbhk3xoixj.ap-southeast-1.rds.amazonaws.com
     b. Port: 3306
-    c. Uername: Admin
-    d. No password.
+    c. Username: Admin
+    d. Password: spmspmspm
 3. Click on Test Connection.
 4. Clone project from our github and put in in your HTDOCS
     a. https://github.com/Kodajak/SPM_G4T2
 
         Database Environment:
-        1.
-        2.
-        3.
-
+        1. cd into SQLScripts
+        2. Execute create.sql
+        3a. Execute importData.sql
+        3b. If 3a fails, import data via workbench. Files to import can be found in zipped folder titled 'Data'. Order of table to import is as such:
+            A. Role 
+            B. Staff
+            C. LJRole
+            D. LearningJourney
+            E. Course
+            F. LJ_Course
+            G. Skill
+            H. LJRole_Skill
+            I. Course_Skill
+            J. Registration
 
 5. cd into SPM%20Project/flask
 6. Start WAMP/MAMP.
 7. On Terminal, key in: python3 app.py and press enter
-8. Now, go to your browsers and go to http://localhost:8888/SPMProject/SPM%2520Project/htdocs/landingPage.html if you are on Mamp
+8. Now, go to your browsers and go to http://localhost/SPM_G4T2/htdocs/landingPage.html
+ if you are on Mamp
 9. Now, go to your browsers and go to C:/wamp64/SPM%20Project/htdocs/landingPage.html if you are on Wamp
 10. From here, navigate through the pages and the fucntions.
 
@@ -49,7 +60,7 @@ For our project, we used Pandas to crawl through the csv file to extract the dat
 
 We used the test cases that we came up with to test the pages and functions that we have built and to certify that something meets the test cases we have our scrum master to verify.
 
-Test Driven Development:
+# Test Driven Development
 The Test Driven Development (TDD) we implemented, utilizes python framework (PyTest) to frame and execute our TDD. To run execute our TDD: 
 
 1. cd into SPM%20Project/flask
