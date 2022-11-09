@@ -74,10 +74,25 @@ class TestSkillMapping(unittest.TestCase):
 
     def test_update_skill_mapping(self):
         r = requests.get("http://localhost:5000/update-skill-mapping/9999")
+        self.assertEqual(r.status_code, 200)
         self.assertEqual(type(r.json()['roles'][0]), list)
         self.assertEqual(type(r.json()['courses'][0]), list)
         self.assertEqual(r.json()['currentMappedCourses'][0][0], 'IS555')
         self.assertEqual(r.json()['currentMappedRoles'][0][0], 2222)
+
+    def test_removeCourseMapping(self):
+        r = requests.post("http://localhost:5000/removeCourseMapping/9999", json={
+                "course": "IS555"
+            })
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.text, "success")
+
+    def test_removeRoleMapping(self):
+        r = requests.post("http://localhost:5000/removeRoleMapping/9999", json={
+                "role": 2222
+            })
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.text, "success")
 
     def test_submit_mapping(self):
         query = "INSERT INTO LJRole (ljrole_id, ljrole_name, ljrole_desc, status) VALUES (2020, 'LJRole to POST', 'LJRole to POST Description', 1)"

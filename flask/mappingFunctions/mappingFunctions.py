@@ -120,7 +120,7 @@ def removeCourseMapping(skillID):
         cursor.execute(query, course_data)
         db_connection.commit()
         print(course_data)
-        return jsonify("success"), 201
+        return "success"
     except Exception:
         return jsonify({
             "message": "Unable to commit to database."
@@ -132,7 +132,6 @@ def removeCourseMapping(skillID):
 def removeRoleMapping(skillID):
     # check for missing inputs
     data = request.get_json()
-    print(data['role'])
     try:
         role = data['role']
         query = "DELETE FROM LJRole_Skill WHERE skill_id = (%s) AND ljrole_id = (%s)"
@@ -140,7 +139,7 @@ def removeRoleMapping(skillID):
         cursor.execute(query, role_data)
         db_connection.commit()
         print(role_data)
-        return jsonify("success"), 201
+        return "success"
     except Exception:
         return jsonify({
             "message": "Unable to commit to database."

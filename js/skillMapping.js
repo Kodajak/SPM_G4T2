@@ -14,7 +14,7 @@ const vm = new Vue({
             } else {
                 proceed = confirm("Are you sure you want to remove " + value2 + " ?")
                 event.preventDefault();
-                if (proceed === true){
+                if (proceed === true) {
                     axios.post('http://localhost:5000/removeCourseMapping/'+myParam, {
                         course: value
                     })
@@ -37,7 +37,8 @@ const vm = new Vue({
             } else {
                 proceed = confirm("Are you sure you want to remove " + value2 + " ?")
                 event.preventDefault();
-                if (proceed === true){
+                if (proceed === true) {
+                    console.log(value)
                     axios.post('http://localhost:5000/removeRoleMapping/'+myParam, {
                         role: value
                     })
