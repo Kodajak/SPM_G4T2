@@ -35,8 +35,8 @@ jobs:
     - name: Run main.py
       run: |
         python3 flask/main.py
+
   build:
-    needs: build-main
     runs-on: ubuntu-latest
 
     steps:

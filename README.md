@@ -28,12 +28,12 @@ This project helps to provide an integration of LMS and LJS. The way of integrat
             I. Course_Skill
             J. Registration
 
-5. cd into SPM%20Project/flask
+5. cd into SPM_G4T2/flask
 6. Start WAMP/MAMP.
 7. On Terminal, key in: python3 app.py and press enter
 8. Now, go to your browsers and go to http://localhost/SPM_G4T2/htdocs/landingPage.html
  if you are on Mamp
-9. Now, go to your browsers and go to C:/wamp64/SPM%20Project/htdocs/landingPage.html if you are on Wamp
+9. Now, go to your browsers and go to C:/wamp64/SPM_G4T2/htdocs/landingPage.html if you are on Wamp
 10. From here, navigate through the pages and the fucntions.
 
 # Build and Test
@@ -68,8 +68,11 @@ The Test Driven Development (TDD) we implemented, utilizes python framework (PyT
 3. Open new terminal
 4. Run pytest -s
 
-PyTest will return the total number of tests executed, number of tests passed, number of tests failed, and the reason of the failure.
+PyTest will return the total number of tests executed, number of tests passed, number of tests failed, and the reason of the failure. TDD works on VSC however we are facing issues with running main app concurrently with test case workflows.
 
 # Contribute
 For our project, there are certain ways that we can improve on if there was more time given to us, however, code based isn't what is important here, but the process of the project completion.
 How other users/developers can contribute to our codes would be to come up with a more efficient way of how we route our flask app and the javascript logics.
+
+# Note
+Our team was the team that have done everything on DevOps and was asked to move to GitHub. We have migrated the repository to GitHub which is the current repository you are cloning from. Therefore, within the submitted files, you will see links with a different pathway (For Example: http://localhost/SPM/SPM%2520Project/htdocs/skillManagement.html) as the DevOps repository was used for the development and testing of the project. If you wish to follow and execute the test cases in perfect sync, do inform us and we will grant you access to that repository.
